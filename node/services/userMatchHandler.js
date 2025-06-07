@@ -11,7 +11,7 @@ const insertUserLog = async (logData) => {
   const { userId, username, nickname, groupId, groupName, sendDateTime, ...matchedGames } = logData;
 
   // Step 1: 插入新日志（matchedAt 会自动写入）
-  await GameMatchLog.create(...logData.toObject());
+  await GameMatchLog.create({ userId, username, nickname, groupId, groupName, sendDateTime, ...matchedGames });
 
   // Step 2: 查询该用户日志总条数
   const count = await GameMatchLog.countDocuments({ userId });
