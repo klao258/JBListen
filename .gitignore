@@ -1,0 +1,14 @@
+# 依赖包
+node_modules/
+
+# IDE配置
+.vscode/
+.idea/
+.DS_Store
+
+# PM2
+pids/
+*.pid
+
+.python-version
+python.session

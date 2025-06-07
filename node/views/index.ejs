@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>群组管理</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container">
+  <!-- 左侧群列表 -->
+  <div class="left">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>群ID</th>
+          <th>群名</th>
+          <th center>是否监听</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% groups.forEach((group, index) => { %>
+          <tr id="row-<%= group.groupId %>" onclick="selectGroup('<%= group.groupId %>')" style="cursor: pointer;">
+            <td><%= index %></td>
+            <td><%= group.groupId %></td>
+            <td><%= group.groupName %></td>
+            <td>
+              <span onclick="event.stopPropagation(); toggleWatch('<%= group.groupId %>', this)" style="cursor:pointer;">
+                <%= group.isWatched ? '✅' : '❌' %>
+              </span>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 右侧关键词配置 -->
+  <div class="right" id="configPanel" style="display:none;">
+    <form method="post" action="/group-configs/save">
+      <h3 id="groupTitle">群组关键词：</h3>
+      <input type="hidden" name="groupId" id="groupIdField">
+      <input type="hidden" name="groupName" id="groupNameField">
+      <input type="hidden" name="gameConfigs" id="gameConfigsField">
+      <div id="gameConfigEditor"></div>
+      <button type="submit" class="on">保存配置</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const groupList = <%- JSON.stringify(groups) %>;
+  const gameTypes = <%- JSON.stringify(gameTypes) %>;
+
+  // 切换群组监听
+  const toggleWatch = async (groupId, el) => {
+    fetch(`/group-configs/${groupId}/toggle`, { method: 'POST'})
+    .then(res => res.json())
+    .then(data => {
+      el.innerText = data.isWatched ? '✅' : '❌';
+    })
+    .catch(err => {
+      console.error('切换失败', err);
+      alert('切换监听失败');
+    });
+  }
+  
+  // 选中行
+  const selectGroup = (groupId) => {
+    const group = groupList.find(g => g.groupId === groupId);
+    if (!group) return;
+
+    // ✅ 移除所有行的 active class
+    document.querySelectorAll("tr").forEach(tr => tr.classList.remove("active"));
+
+    // ✅ 给当前行加 active class
+    const currentRow = document.getElementById("row-" + groupId);
+    if (currentRow) currentRow.classList.add("active");
+
+    document.getElementById('configPanel').style.display = 'block';
+    document.getElementById('groupTitle').innerText = '配置关键词：' + group.groupName;
+    document.getElementById('groupIdField').value = group.groupId;
+    document.getElementById('groupNameField').value = group.groupName;
+
+    const editor = document.getElementById('gameConfigEditor');
+    editor.innerHTML = '';
+
+    gameTypes.forEach(gt => {
+      const found = (group.gameConfigs || []).find(cfg => cfg.gameType === gt.name);
+      const keywords = found ? found.keywords.join(',') : '';
+      editor.innerHTML += `
+        <div>
+          <div>
+            <label>${gt.label}系列：</label>
+            <span>${gt.description}</span>
+          </div>
+          <input type="text" class="keyword-input" data-type="${gt.name}" data-label="${gt.label}" value="${keywords}" placeholder="请输入指令，英文逗号隔开" />
+        </div>
+      `;
+    });
+  }
+
+  // 提交配置修改
+  document.querySelector('form')?.addEventListener('submit', async function(e) {
+    e.preventDefault(); // 阻止默认提交（防止刷新）
+
+    const groupId = document.getElementById('groupIdField').value;
+    const groupName = document.getElementById('groupNameField').value;
+    const inputs = document.querySelectorAll('.keyword-input');
+    const gameConfigs = [];
+    inputs.forEach(input => {
+      gameConfigs.push({
+        gameType: input.dataset.type,
+        gameLabel: input.dataset.label,
+        keywords: input.value.split(',').map(k => k.trim()).filter(k => k)
+      });
+    });
+    console.log('gameConfigs', gameConfigs);
+    
+    document.getElementById('gameConfigsField').value = JSON.stringify(gameConfigs);
+
+    try {
+      const res = await fetch('/group-configs/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+          groupId,
+          groupName,
+          gameConfigs: JSON.stringify(gameConfigs)
+        })
+      });
+    } catch (err) {
+      console.log('❌ 网络错误：' + err.message);
+    }
+  });
+
+  // ✅ 页面加载后默认选中第一个群组
+  window.addEventListener('DOMContentLoaded', () => {
+    if (groupList.length > 0) {
+      selectGroup(groupList[0].groupId);
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "jblisten1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "installAll": "chmod +x install.sh && ./install.sh",
+    "start": "node start.js",
+    "start:node": "node node/index.js",
+    "start:py": "python3 python/listener.py"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "ejs": "^3.1.10",
+    "input": "^1.0.1",
+    "koa": "^3.0.0",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^13.0.1",
+    "koa-static": "^5.0.0",
+    "koa-views": "^8.1.0",
+    "mongoose": "^8.15.1",
+    "telegraf": "^4.16.3",
+    "telegram": "^2.26.22"
+  }
+}

@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="/css/style.css">
+
+<div class="ulogs">
+    <form id="filterForm" method="get" action="/user-logs">
+        用户ID：<input type="text" name="userId" value="<%= query.userId || '' %>" />
+        用户名：<input type="text" name="username" value="<%= query.username || '' %>" />
+        所属群组：
+        <select name="groupName" onchange="document.getElementById('filterForm').submit()">
+            <option value="">全部</option>
+            <% groups.forEach(group => { %>
+            <option value="<%= group %>" <%= query.groupName === group ? 'selected' : '' %>><%= group %></option>
+            <% }) %>
+        </select>
+        游戏类型：
+        <select name="gameType" onchange="document.getElementById('filterForm').submit()">
+            <option value="">全部</option>
+            <% gameTypes.forEach(gt => { %>
+                <option value="<%= gt.name %>" <%= query.gameType === gt.name ? 'selected' : '' %>><%= gt.label %></option>
+            <% }) %>
+        </select>
+        <button type="submit">查询</button>
+    </form>
+
+    <div class="ulogs-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>昵称</th>
+                    <th>用户名</th>
+                    <th>群组</th>
+                    <th>游戏类型</th>
+                    <th>消息内容</th>
+                    <th>发送时间</th>
+                    <th>触发时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% logs.forEach((log, index) => { %>
+                    <tr>
+                        <td><%= index %></td>
+                        <td><%= log?.nickname || '未知' %></td>
+                        <td>
+                            <% if (log?.username) { %>
+                            <a href="https://t.me/<%= log.username %>" target="_blank">
+                                <%= log.username.indexOf('@') === -1 ? '@' + log.username : log.username %>
+                            </a>
+                            <% } else { %>
+                            -
+                            <% } %>
+                        </td>
+                        <td><%= log?.groupName %></td>
+                        <td><%= log?.gameLabel %></td>
+                        <td><%= log?.originalMessage %></td>
+                        <td><%= log?.sendDateTime %></td>
+                        <td><%= log?.formattedTime %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-container">
+        <p>共 <%= total %> 条记录，当前第 <%= currentPage %> 页</p>
+
+        <div class="pagination">
+            <% const totalPages = Math.ceil(total / pageSize); %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="?<%= new URLSearchParams({ ...query, page: i, pageSize }).toString() %>"
+                    class="<%= currentPage === i ? 'active' : '' %>">
+                    <%= i %>
+                    </a>
+                <% } 
+            %>
+
+            <form method="get" action="/user-logs" style="display:flex;align-items:center;gap:8px;">
+                <% for (const key in query) {
+                    if (key !== 'pageSize' && key !== 'page') { %>
+                    <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+                <% } } %>
+                <label for="pageSize">每页：</label>
+                <select name="pageSize" onchange="this.form.submit()">
+                <% [20, 50, 100, 200].forEach(size => { %>
+                    <option value="<%= size %>" <%= pageSize == size ? 'selected' : '' %>><%= size %></option>
+                <% }) %>
+                </select>
+                <input type="hidden" name="page" value="1">
+            </form>
+
+            <form method="get" action="/user-logs" style="display:flex;align-items:center;gap:8px;">
+                <% for (const key in query) {
+                    if (key !== 'page' && key !== 'pageSize') { %>
+                    <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+                <% } } %>
+                <span>跳转到</span>
+                <input type="number" name="page" min="1" max="<%= totalPages %>" style="width: 60px;" />
+                <span>页</span>
+                <input type="hidden" name="pageSize" value="<%= pageSize %>">
+                <button type="submit">跳转</button>
+            </form>
+        </div>
+    </div>
+</div>
