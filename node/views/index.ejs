@@ -4,64 +4,50 @@
   <meta charset="UTF-8">
   <title>群组管理</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-<div class="container mx-auto">
-  <div class="flex flex-col lg:flex-row gap-6">
-
-    <!-- 左侧群组表 -->
-    <div class="lg:w-1/2 w-full">
-      <table class="min-w-full text-sm text-left text-gray-700 border border-gray-200 rounded">
-        <thead class="bg-gray-100 text-gray-800">
-          <tr>
-            <th class="px-3 py-2 border-b">#</th>
-            <th class="px-3 py-2 border-b">群ID</th>
-            <th class="px-3 py-2 border-b">群名</th>
-            <th class="px-3 py-2 border-b text-center">是否监听</th>
+<div class="container">
+  <!-- 左侧群列表 -->
+  <div class="left">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>群ID</th>
+          <th>群名</th>
+          <th center>是否监听</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% groups.forEach((group, index) => { %>
+          <tr id="row-<%= group.groupId %>" onclick="selectGroup('<%= group.groupId %>')" style="cursor: pointer;">
+            <td><%= index %></td>
+            <td><%= group.groupId %></td>
+            <td><%= group.groupName %></td>
+            <td>
+              <span onclick="event.stopPropagation(); toggleWatch('<%= group.groupId %>', this)" style="cursor:pointer;">
+                <%= group.isWatched ? '✅' : '❌' %>
+              </span>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          <% groups.forEach((group, index) => { %>
-            <tr id="row-<%= group.groupId %>"
-                onclick="selectGroup('<%= group.groupId %>')"
-                class="hover:bg-gray-50 cursor-pointer border-b last:border-none">
-              <td class="px-3 py-2"><%= index + 1 %></td>
-              <td class="px-3 py-2"><%= group.groupId %></td>
-              <td class="px-3 py-2"><%= group.groupName %></td>
-              <td class="px-3 py-2 text-center">
-                <span onclick="event.stopPropagation(); toggleWatch('<%= group.groupId %>', this)"
-                      class="cursor-pointer text-xl">
-                  <%= group.isWatched ? '✅' : '❌' %>
-                </span>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 
-    <!-- 右侧配置编辑 -->
-    <div class="lg:w-1/2 w-full" id="configPanel" style="display: none;">
-      <form method="post" action="/group-configs/save" class="bg-white border border-gray-200 rounded shadow p-6">
-        <h3 id="groupTitle" class="text-lg font-semibold mb-4 text-gray-800">群组关键词：</h3>
-        <input type="hidden" name="groupId" id="groupIdField">
-        <input type="hidden" name="groupName" id="groupNameField">
-        <input type="hidden" name="gameConfigs" id="gameConfigsField">
-
-        <!-- 关键词编辑器区域 -->
-        <div id="gameConfigEditor" class="mb-4 min-h-[100px] border border-gray-300 rounded p-2 bg-gray-50">
-          <!-- JS动态填充 -->
-        </div>
-
-        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition">
-          保存配置
-        </button>
-      </form>
-    </div>
-
+  <!-- 右侧关键词配置 -->
+  <div class="right" id="configPanel" style="display:none;">
+    <form method="post" action="/group-configs/save">
+      <h3 id="groupTitle">群组关键词：</h3>
+      <input type="hidden" name="groupId" id="groupIdField">
+      <input type="hidden" name="groupName" id="groupNameField">
+      <input type="hidden" name="gameConfigs" id="gameConfigsField">
+      <div id="gameConfigEditor"></div>
+      <button type="submit" class="on">保存配置</button>
+    </form>
   </div>
 </div>
+
 <script>
   const groupList = <%- JSON.stringify(groups) %>;
   const gameTypes = <%- JSON.stringify(gameTypes) %>;
