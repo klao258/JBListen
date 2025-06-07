@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { TelegramClient } = require('telegram');
-const { StringSession, StoreSession } = require('telegram/sessions');
+const { StringSession } = require('telegram/sessions');
 const { NewMessage } = require('telegram/events');
 const GameType = require('../models/GameType');
 const input = require('input');
@@ -77,46 +77,52 @@ const initGroupsFromTelegram = async () => {
   }
 }
 
-// 初始化
-const session = new StoreSession(process.env.NODE_SESSION_FILE); // 自动保存文件
-const start = async () => {
-  client = new TelegramClient(session, parseInt(process.env.API_ID), process.env.API_HASH,{ 
-    connectionRetries: 5 
-  });
+// 获取session
+const ensureClient = async () => {
+  const sessionPath = process.env.NODE_SESSION_FILE;
+  const apiId = parseInt(process.env.API_ID);
+  const apiHash = process.env.API_HASH;
 
-  await client.start({
-    phoneNumber: async () => process.env.PHONE_NUMBER,
-    password: async () => process.env.PASSWORD,
-    phoneCode: async () => await input.text('node服务启动 - Code: '),
-    onError: err => console.log(err),
-  });
+  let stringSession;
+
+  if (fs.existsSync(sessionPath)) {
+    const sessionStr = fs.readFileSync(sessionPath, "utf8").trim();
+    stringSession = new StringSession(sessionStr);
+    client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
+    await client.connect();
+    console.log("🔌 已连接 Telegram（使用已有 session）");
+
+    if (!await client.checkAuthorization()) {
+      console.error("❌ 现有 session 无效，请删除后重新登录！");
+      process.exit(1);
+    }
+  } else {
+    stringSession = new StringSession("");
+    client = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
+
+    console.log("📲 初次登录 Telegram，等待验证码...");
+    await client.start({
+      phoneNumber: async () => process.env.PHONE_NUMBER,
+      password: async () => process.env.PASSWORD,
+      phoneCode: async () => await input.text("node 登陆验证码："),
+      onError: err => console.error("❌ 登录错误:", err),
+    });
+
+    const sessionStr = client.session.save();
+    fs.writeFileSync(sessionPath, sessionStr, "utf8");
+  }
+
+  return client;
+};
+
+const start = async () => {
+  client = await ensureClient();  // 已连接 + 已授权的 client
 
   console.log('✅ TG 登录成功');  // 👈 关键输出标志
 
   await initGroupsFromTelegram(); // 登录成功后初始化群组
-
-  // client.addEventHandler(async event => {
-  //   const msg = event.message;
-
-  //   // 正确地从 message 获取 chat 和 sender
-  //   const chat = await msg.getChat();       // ✅ 获取群或频道信息
-  //   const sender = await msg.getSender();   // ✅ 获取发消息的用户信息
-  //   const groupId = chat?.id?.toString();   // 群ID（可能是chatId或channelId）
-  //   const senderId = sender?.id?.toString();
-  //   const message = msg.message;
-
-  //   // 消息、群id、发送者信息、机器人发送 直接return
-  //   if (!msg || !groupId || !sender || sender.bot || !senderId || !message) return;
-  //   await userMatchHandler.handleMessage({ client, event, chat, sender, groupId, senderId, message });
-  // }, new NewMessage({}));
 };
 
-const getClient = () => {
-  if (!client) throw new Error('Telegram 实例为空');
-  return client;
-}
-
 module.exports = {
-  start,
-  getClient
+  start
 };
