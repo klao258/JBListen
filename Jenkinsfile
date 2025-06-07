@@ -32,20 +32,22 @@ pipeline {
             }
         }
 
-        steps {
-            echo '🚀 使用 PM2 启动 Launcher（start.js）...'
+        stage('使用 PM2 启动服务') {
+            steps {
+                echo '🚀 使用 PM2 启动 Launcher（start.js）...'
 
-            // 删除旧服务
-            sh 'pm2 delete JBListen || true'
+                // 删除旧服务
+                sh 'pm2 delete JBListen || true'
 
-            // 启动封装脚本
-            sh 'pm2 start ecosystem.config.js --only JBListen'
+                // 启动封装脚本
+                sh 'pm2 start ecosystem.config.js --only JBListen'
 
-            // 保存 PM2 状态（可选）
-            sh 'pm2 save'
+                // 保存 PM2 状态（可选）
+                sh 'pm2 save'
 
-            // 显示当前状态
-            sh 'pm2 list'
+                // 显示当前状态
+                sh 'pm2 list'
+            }
         }
     }
 
