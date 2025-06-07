@@ -28,21 +28,14 @@ pipeline {
         stage('安装依赖') {
             steps {
                 echo '📦 安装依赖...'
-                sh 'npm install'
+                sh 'npm run installAll'
             }
         }
 
         stage('启动服务') {
             steps {
                 echo '🚀 启动服务中...'
-                sh '''
-                    if ! command -v pm2 >/dev/null 2>&1; then
-                        npm install -g pm2
-                    fi
-                    pm2 delete jblisten || true
-                    pm2 start index.js --name jblisten --watch --time
-                    pm2 save
-                '''
+                sh 'npm start'
             }
         }
     }

@@ -12,3 +12,4 @@ pids/
 
 .python-version
 python.session
+.env
