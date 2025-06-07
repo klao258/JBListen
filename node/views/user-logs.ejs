@@ -2,67 +2,99 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <div class="ulogs">
-    <form id="filterForm" method="get" action="/user-logs">
-        用户ID：<input type="text" name="userId" value="<%= query.userId || '' %>" />
-        用户名：<input type="text" name="username" value="<%= query.username || '' %>" />
-        所属群组：
-        <select name="groupName" onchange="document.getElementById('filterForm').submit()">
+    <form id="filterForm" method="get" action="/user-logs" class="flex flex-wrap items-center gap-4 mb-6 text-sm">
+
+        <!-- 用户 ID -->
+        <div class="flex items-center gap-1">
+          <label for="userId" class="text-gray-700">用户ID：</label>
+          <input type="text" id="userId" name="userId" value="<%= query.userId || '' %>"
+                 class="border rounded px-2 py-1 w-36" />
+        </div>
+      
+        <!-- 用户名 -->
+        <div class="flex items-center gap-1">
+          <label for="username" class="text-gray-700">用户名：</label>
+          <input type="text" id="username" name="username" value="<%= query.username || '' %>"
+                 class="border rounded px-2 py-1 w-36" />
+        </div>
+      
+        <!-- 所属群组 -->
+        <div class="flex items-center gap-1">
+          <label for="groupName" class="text-gray-700">所属群组：</label>
+          <select id="groupName" name="groupName"
+                  onchange="document.getElementById('filterForm').submit()"
+                  class="border rounded px-2 py-1">
             <option value="">全部</option>
             <% groups.forEach(group => { %>
-            <option value="<%= group %>" <%= query.groupName === group ? 'selected' : '' %>><%= group %></option>
+              <option value="<%= group %>" <%= query.groupName === group ? 'selected' : '' %>><%= group %></option>
             <% }) %>
-        </select>
-        游戏类型：
-        <select name="gameType" onchange="document.getElementById('filterForm').submit()">
+          </select>
+        </div>
+      
+        <!-- 游戏类型 -->
+        <div class="flex items-center gap-1">
+          <label for="gameType" class="text-gray-700">游戏类型：</label>
+          <select id="gameType" name="gameType"
+                  onchange="document.getElementById('filterForm').submit()"
+                  class="border rounded px-2 py-1">
             <option value="">全部</option>
             <% gameTypes.forEach(gt => { %>
-                <option value="<%= gt.name %>" <%= query.gameType === gt.name ? 'selected' : '' %>><%= gt.label %></option>
+              <option value="<%= gt.name %>" <%= query.gameType === gt.name ? 'selected' : '' %>>
+                <%= gt.label %>
+              </option>
             <% }) %>
-        </select>
-        <button type="submit">查询</button>
+          </select>
+        </div>
+      
+        <!-- 查询按钮 -->
+        <div>
+          <button type="submit"
+                  class="px-4 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white">查询</button>
+        </div>
     </form>
 
-    <div class="ulogs-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>昵称</th>
-                    <th>用户名</th>
-                    <th>群组</th>
-                    <th>游戏类型</th>
-                    <th>消息内容</th>
-                    <th>发送时间</th>
-                    <th>触发时间</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% logs.forEach((log, index) => { %>
-                    <tr>
-                        <td><%= index %></td>
-                        <td><%= log?.nickname || '未知' %></td>
-                        <td>
-                            <% if (log?.username) { %>
-                            <a href="https://t.me/<%= log.username %>" target="_blank">
-                                <%= log.username.indexOf('@') === -1 ? '@' + log.username : log.username %>
-                            </a>
-                            <% } else { %>
-                            -
-                            <% } %>
-                        </td>
-                        <td><%= log?.groupName %></td>
-                        <td><%= log?.gameLabel %></td>
-                        <td><%= log?.originalMessage %></td>
-                        <td><%= log?.sendDateTime %></td>
-                        <td><%= log?.formattedTime %></td>
-                    </tr>
-                <% }) %>
-            </tbody>
+    <div class="overflow-x-auto ulogs-table mt-4 rounded border border-gray-200">
+        <table class="min-w-full text-sm text-left text-gray-700">
+          <thead class="bg-gray-100 text-gray-800 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-2 whitespace-nowrap">#</th>
+              <th class="px-4 py-2 whitespace-nowrap">昵称</th>
+              <th class="px-4 py-2 whitespace-nowrap">用户名</th>
+              <th class="px-4 py-2 whitespace-nowrap">群组</th>
+              <th class="px-4 py-2 whitespace-nowrap">游戏类型</th>
+              <th class="px-4 py-2 whitespace-nowrap">消息内容</th>
+              <th class="px-4 py-2 whitespace-nowrap">发送时间</th>
+              <th class="px-4 py-2 whitespace-nowrap">触发时间</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% logs.forEach((log, index) => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2"><%= index + 1 %></td>
+                <td class="px-4 py-2"><%= log?.nickname || '未知' %></td>
+                <td class="px-4 py-2 text-blue-600">
+                  <% if (log?.username) { %>
+                    <a href="https://t.me/<%= log.username %>" target="_blank" class="hover:underline">
+                      <%= log.username.indexOf('@') === -1 ? '@' + log.username : log.username %>
+                    </a>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+                <td class="px-4 py-2"><%= log?.groupName || '-' %></td>
+                <td class="px-4 py-2"><%= log?.gameLabel || '-' %></td>
+                <td class="px-4 py-2 break-all max-w-sm"><%= log?.originalMessage || '' %></td>
+                <td class="px-4 py-2 whitespace-nowrap"><%= log?.sendDateTime || '-' %></td>
+                <td class="px-4 py-2 whitespace-nowrap"><%= log?.formattedTime || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
         </table>
     </div>
+      
 
     <% const totalPages = Math.ceil(total / pageSize); %>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2 sm:flex-nowrap">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2 sm:flex-nowrap">
 
         <!-- 左侧：总记录 -->
         <div class="text-sm text-gray-600 whitespace-nowrap">
@@ -72,91 +104,91 @@
         <!-- 右侧：每页选择 + 分页 + 跳转 -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
 
-        <!-- 每页选择器 -->
-        <form method="get" action="" class="flex items-center gap-1">
-        <% for (const key in query) {
-            if (key !== 'page' && key !== 'pageSize') { %>
-            <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
-        <% } } %>
-        <label class="text-sm text-gray-600">每页</label>
-        <select name="pageSize" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm">
-            <% [20, 50, 100, 200].forEach(size => { %>
-            <option value="<%= size %>" <%= size == pageSize ? 'selected' : '' %>><%= size %></option>
-            <% }) %>
-        </select>
-        <input type="hidden" name="page" value="1">
-        </form>
+            <!-- 每页选择器 -->
+            <form method="get" action="" class="flex items-center gap-1">
+            <% for (const key in query) {
+                if (key !== 'page' && key !== 'pageSize') { %>
+                <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+            <% } } %>
+            <label class="text-sm text-gray-600">每页</label>
+            <select name="pageSize" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm">
+                <% [20, 50, 100, 200].forEach(size => { %>
+                <option value="<%= size %>" <%= size == pageSize ? 'selected' : '' %>><%= size %></option>
+                <% }) %>
+            </select>
+            <input type="hidden" name="page" value="1">
+            </form>
 
-        <!-- 首页 -->
-        <% if (currentPage > 1) { %>
-        <a href="?<%= new URLSearchParams({ ...query, page: 1, pageSize }).toString() %>"
-            class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">首页</a>
-        <% } else { %>
-        <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">首页</span>
-        <% } %>
+            <!-- 首页 -->
+            <% if (currentPage > 1) { %>
+            <a href="?<%= new URLSearchParams({ ...query, page: 1, pageSize }).toString() %>"
+                class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">首页</a>
+            <% } else { %>
+            <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">首页</span>
+            <% } %>
 
-        <!-- 上一页 -->
-        <% if (currentPage > 1) { %>
-        <a href="?<%= new URLSearchParams({ ...query, page: currentPage - 1, pageSize }).toString() %>"
-            class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">上一页</a>
-        <% } else { %>
-        <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">上一页</span>
-        <% } %>
+            <!-- 上一页 -->
+            <% if (currentPage > 1) { %>
+            <a href="?<%= new URLSearchParams({ ...query, page: currentPage - 1, pageSize }).toString() %>"
+                class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">上一页</a>
+            <% } else { %>
+            <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">上一页</span>
+            <% } %>
 
-        <!-- 页码逻辑 -->
-        <% function getPageList(currentPage, totalPages) {
-        const pages = [];
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else if (currentPage <= 4) {
-            pages.push(1, 2, 3, 4, 5, '...', totalPages);
-        } else if (currentPage >= totalPages - 3) {
-            pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-        } else {
-            pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-        }
-        return pages;
-        } %>
-        <% const pages = getPageList(currentPage, totalPages); %>
+            <!-- 页码逻辑 -->
+            <% function getPageList(currentPage, totalPages) {
+            const pages = [];
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else if (currentPage <= 4) {
+                pages.push(1, 2, 3, 4, 5, '...', totalPages);
+            } else if (currentPage >= totalPages - 3) {
+                pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+            }
+            return pages;
+            } %>
+            <% const pages = getPageList(currentPage, totalPages); %>
 
-        <% pages.forEach(p => { %>
-        <% if (p === '...') { %>
-            <span class="px-2 text-gray-500">...</span>
-        <% } else { %>
-            <a href="?<%= new URLSearchParams({ ...query, page: p, pageSize }).toString() %>"
-            class="px-3 py-1 rounded border text-sm <%= currentPage === p ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100' %>">
-            <%= p %>
-            </a>
-        <% } %>
-        <% }); %>
+            <% pages.forEach(p => { %>
+            <% if (p === '...') { %>
+                <span class="px-2 text-gray-500">...</span>
+            <% } else { %>
+                <a href="?<%= new URLSearchParams({ ...query, page: p, pageSize }).toString() %>"
+                class="px-3 py-1 rounded border text-sm <%= currentPage === p ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100' %>">
+                <%= p %>
+                </a>
+            <% } %>
+            <% }); %>
 
-        <!-- 下一页 -->
-        <% if (currentPage < totalPages) { %>
-        <a href="?<%= new URLSearchParams({ ...query, page: currentPage + 1, pageSize }).toString() %>"
-            class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">下一页</a>
-        <% } else { %>
-        <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">下一页</span>
-        <% } %>
+            <!-- 下一页 -->
+            <% if (currentPage < totalPages) { %>
+            <a href="?<%= new URLSearchParams({ ...query, page: currentPage + 1, pageSize }).toString() %>"
+                class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">下一页</a>
+            <% } else { %>
+            <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">下一页</span>
+            <% } %>
 
-        <!-- 末页 -->
-        <% if (currentPage < totalPages) { %>
-        <a href="?<%= new URLSearchParams({ ...query, page: totalPages, pageSize }).toString() %>"
-            class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">末页</a>
-        <% } else { %>
-        <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">末页</span>
-        <% } %>
+            <!-- 末页 -->
+            <% if (currentPage < totalPages) { %>
+            <a href="?<%= new URLSearchParams({ ...query, page: totalPages, pageSize }).toString() %>"
+                class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">末页</a>
+            <% } else { %>
+            <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">末页</span>
+            <% } %>
 
-        <!-- 跳页输入框 -->
-        <form method="get" action="" class="flex items-center gap-1">
-        <% for (const key in query) {
-            if (key !== 'page') { %>
-            <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
-        <% } } %>
-        <label class="text-sm text-gray-600">跳转到</label>
-        <input type="number" name="page" min="1" max="<%= totalPages %>" class="w-16 px-2 py-1 border rounded text-sm" />
-        <button type="submit" class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">Go</button>
-        <input type="hidden" name="pageSize" value="<%= pageSize %>">
-        </form>
+            <!-- 跳页输入框 -->
+            <form method="get" action="" class="flex items-center gap-1">
+            <% for (const key in query) {
+                if (key !== 'page') { %>
+                <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+            <% } } %>
+            <label class="text-sm text-gray-600">跳转到</label>
+            <input type="number" name="page" min="1" max="<%= totalPages %>" class="w-16 px-2 py-1 border rounded text-sm" />
+            <button type="submit" class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">Go</button>
+            <input type="hidden" name="pageSize" value="<%= pageSize %>">
+            </form>
 
         </div>
     </div>
