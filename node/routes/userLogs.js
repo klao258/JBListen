@@ -24,8 +24,6 @@ router.get('/user-logs', async ctx => {
       .skip((currentPage - 1) * size)
       .limit(size);
 
-      console.log('rawLogs', rawLogs)
-
     // 格式化 matchedAt 为北京时间字符串
     const logs = rawLogs.map(log => {
       const date = new Date(log.matchedAt).toLocaleString('en-US', { timeZone: 'Asia/Shanghai' });
