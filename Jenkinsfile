@@ -47,9 +47,6 @@ pipeline {
 
                 // 显示当前状态
                 sh 'sudo pm2 list'
-
-                // 显示当前日志
-                sh 'sudo pm2 logs JBListen'
             }
         }
     }
