@@ -19,7 +19,7 @@ const nodeSession = envContent
   ?.split("=")[1]
   ?.trim();
 
-if (!nodeSession) {
+if (!nodeSession.length) {
   console.error("❌ 检测失败：未在 .env 中找到 NODE_SESSION，请先登录 Telegram（Node.js）！");
   hasError = true;
 } else {
@@ -27,7 +27,7 @@ if (!nodeSession) {
 }
 
 if (!fs.existsSync(pythonSessionPath)) {
-  console.error(`❌ 检测失败：未找到 Python 会话文件: ${pythonSessionPath}`);
+  console.error(`❌ 检测失败：未找到 Python 会话文件: ${pythonSessionPath}, 请先进入项目手动构建一次`);
   hasError = true;
 } else {
   console.log("✅ Python session 文件已存在");

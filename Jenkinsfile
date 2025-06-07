@@ -11,17 +11,17 @@ pipeline {
     }
 
     stages {
-        stage('检测 Telegram Session') {
-            steps {
-                echo '🔍 检查 Node 和 Python 会话是否存在'
-                sh 'node check_env.js'
-            }
-        }
-
         stage('拉取代码') {
             steps {
                 echo '📥 拉取 GitHub 最新代码...'
                 checkout scm
+            }
+        }
+
+        stage('检测 Telegram Session') {
+            steps {
+                echo '🔍 检查 Node 和 Python 会话是否存在'
+                sh 'node check_env.js'
             }
         }
 
