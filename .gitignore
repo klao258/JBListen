@@ -11,5 +11,6 @@ pids/
 *.pid
 
 .python-version
-python.session
-.env
+*.session
+*.session-journal
+python/python.session-journal

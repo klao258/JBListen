@@ -1,13 +1,12 @@
 require('dotenv').config();
 const { TelegramClient } = require('telegram');
-const { StringSession } = require('telegram/sessions');
+const { StringSession, StoreSession } = require('telegram/sessions');
 const { NewMessage } = require('telegram/events');
 const GameType = require('../models/GameType');
 const input = require('input');
 const fs = require('fs');
 const GroupConfig = require('../models/GroupConfig');
 const userMatchHandler = require('./userMatchHandler');
-const ENV_PATH = '.env';
 
 let client;
 
@@ -78,44 +77,12 @@ const initGroupsFromTelegram = async () => {
   }
 }
 
-// 自动更新session
-const updateEnvStringSession = (session) => {
-  let content = '';
-  if (fs.existsSync(ENV_PATH)) {
-    const raw = fs.readFileSync(ENV_PATH, 'utf-8');
-    const lines = raw.split('\n');
-    let replaced = false;
-
-    content = lines.map(line => {
-        if (line.startsWith('NODE_SESSION=')) {
-          replaced = true;
-          return `NODE_SESSION="${session}"`;
-        }
-        return line;
-      })
-      .join('\n');
-
-    if (!replaced) {
-      content += `\nNODE_SESSION="${session}"\n`;
-    }
-  } else {
-    content = `NODE_SESSION="${session}"\n`;
-  }
-
-  fs.writeFileSync(ENV_PATH, content, 'utf-8');
-  console.log('✅ 已写入 NODE_SESSION 到 .env 文件');
-}
-
 // 初始化
+const session = new StoreSession(process.env.NODE_SESSION_FILE); // 自动保存文件
 const start = async () => {
-  // 登陆TG
-  client = new TelegramClient(
-    new StringSession(process.env.NODE_SESSION || ''),
-    parseInt(process.env.API_ID),
-    process.env.API_HASH,
-    { connectionRetries: 5 }
-  );
-  
+  client = new TelegramClient(session, parseInt(process.env.API_ID), process.env.API_HASH,{ 
+    connectionRetries: 5 
+  });
 
   await client.start({
     phoneNumber: async () => process.env.PHONE_NUMBER,
@@ -124,10 +91,7 @@ const start = async () => {
     onError: err => console.log(err),
   });
 
-  const sessionStr = client.session.save();
-  updateEnvStringSession(sessionStr);
-
-  console.log('NODE TG，连接成功');
+  console.log('✅ TG 登录成功');  // 👈 关键输出标志
 
   await initGroupsFromTelegram(); // 登录成功后初始化群组
 

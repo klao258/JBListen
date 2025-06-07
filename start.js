@@ -1,38 +1,61 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
-let listenerProcess = null; // 保存 listener.py 的子进程引用
+let nodeProcess = null;
+let listenerProcess = null;
 
-function runProcess(cmd, args, name, options = {}) {
+function waitForOutput(proc, keyword, timeout = 15000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`⏰ 超时：未检测到 "${keyword}" 输出`));
+    }, timeout);
+
+    proc.stdout.on('data', (data) => {
+      const output = data.toString();
+      process.stdout.write(output);  // 显示输出
+      if (output.includes(keyword)) {
+        clearTimeout(timer);
+        resolve();  // 检测到关键字就继续执行
+      }
+    });
+
+    proc.stderr.on('data', (data) => {
+      process.stderr.write(data.toString());
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+
+    proc.on('exit', (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        reject(new Error(`❌ 进程异常退出，退出码: ${code}`));
+      }
+    });
+  });
+}
+
+async function runProcess(cmd, args, name) {
   return new Promise((resolve, reject) => {
     const p = spawn(cmd, args, {
       cwd: __dirname,
-      stdio: ['inherit', 'pipe', 'inherit'],
-      ...options,
+      stdio: 'inherit',
     });
 
-    p.stdout.on('data', (data) => {
-      const output = data.toString();
-      process.stdout.write(output);
-
-      if (name === 'Node 服务' && output.includes('✅ 已写入 NODE_SESSION 到 .env 文件')) {
-        resolve(p); // 提前 resolve，不等待退出
+    p.on('exit', (code) => {
+      if (code === 0) {
+        console.log(`✅ ${name} 成功退出`);
+        resolve();
+      } else {
+        reject(new Error(`❌ ${name} 异常退出，退出码 ${code}`));
       }
     });
 
     p.on('error', (err) => {
-      reject(new Error(`❌ ${name} 启动异常: ${err.message}`));
-    });
-
-    p.on('exit', (code) => {
-      if (name !== 'Node 服务') {
-        if (code === 0) {
-          console.log(`✅ ${name} 成功退出`);
-          resolve();
-        } else {
-          reject(new Error(`❌ ${name} 异常退出，退出码 ${code}`));
-        }
-      }
+      reject(err);
     });
   });
 }
@@ -40,7 +63,13 @@ function runProcess(cmd, args, name, options = {}) {
 async function startAll() {
   try {
     console.log('🚀 启动 Node 服务...');
-    await runProcess('node', ['node/index.js'], 'Node 服务');
+    nodeProcess = spawn('node', ['node/index.js'], {
+      cwd: __dirname,
+      stdio: ['inherit', 'pipe', 'pipe'],  // 监听 stdout
+    });
+
+    console.log('⏳ 等待 Telegram 登录成功...');
+    await waitForOutput(nodeProcess, '✅ TG 登录成功');
 
     console.log('📦 执行 generate_session.py...');
     await runProcess('python3', ['python/generate_session.py'], '生成 session');
@@ -61,12 +90,10 @@ async function startAll() {
   }
 }
 
-// 捕获 Ctrl+C 退出信号，确保 listener.py 被杀死
 process.on('SIGINT', () => {
   console.log('\n🛑 捕获到 Ctrl+C，正在清理子进程...');
-  if (listenerProcess) {
-    listenerProcess.kill('SIGINT');
-  }
+  if (listenerProcess) listenerProcess.kill('SIGINT');
+  if (nodeProcess) nodeProcess.kill('SIGINT');
   process.exit();
 });
 
