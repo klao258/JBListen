@@ -1,6 +1,7 @@
 const Router = require('koa-router');
 const GroupConfig = require('../models/GroupConfig');
 const GameType = require('../models/GameType');
+const groupConfigsRoute = require('./groupConfigs');
 const userProfilesRoute = require('./userProfiles');
 const gameTypesRoute = require('./gameTypes');
 const userLogsRoute = require('./userLogs');
@@ -14,7 +15,7 @@ router.get('/', async ctx => {
   await ctx.render('index', { groups, gameTypes, request: { path: '/' } }); // ✅ 传入模板
 });
 
-router.use('/group-configs', require('./groupConfigs').routes());
+router.use(groupConfigsRoute.routes());
 router.use(userProfilesRoute.routes());
 router.use(gameTypesRoute.routes());
 router.use(userLogsRoute.routes());
