@@ -8,83 +8,72 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  if (!logs || logs.length === 0) return 50; // 默认中性值
+  if (!logs || logs.length === 0) return 50;
 
-  const maxLogs = 1000;
-  const totalLogs = logs.length;
-  const baseScore = 50;
+  const MINUTES_PER_DAY_ACTIVE = 16 * 60;
+  const MIN_INTERVAL = 2;
 
-  let score = baseScore;
-
-  // 1. 日志数量不足 500 条：中性处理
-  if (totalLogs < 500) {
-    score += 0; // 保持中性
+  function getExpectedMinDuration(logCount) {
+    return logCount * MIN_INTERVAL;
   }
 
-  // 2. 时间跨度评分
-  const first = new Date(logs[logs.length - 1].matchedAt);
-  const last = new Date(logs[0].matchedAt);
-  const durationMs = last - first;
-  const durationHours = durationMs / (1000 * 60 * 60);
+  function scoreTimeSpanScore(logs) {
+    if (logs.length < 100) return 0.5; // 数据量不足，可信度低
 
-  if (durationHours <= 24) {
-    score -= 15;
-  } else if (durationHours <= 72) {
-    score += 0;
-  } else {
-    score += 10;
+    const sorted = [...logs].sort((a, b) => new Date(a.matchedAt) - new Date(b.matchedAt));
+    const actualMinutes = (new Date(sorted[sorted.length - 1].matchedAt) - new Date(sorted[0].matchedAt)) / 60000;
+    const expectedMinutes = getExpectedMinDuration(logs.length);
+
+    if (actualMinutes >= expectedMinutes) return 1.0;
+    if (actualMinutes >= expectedMinutes * 0.7) return 0.7;
+    if (actualMinutes >= expectedMinutes * 0.5) return 0.4;
+    return 0.2;
   }
 
-  // 3. 群组评分
-  const groupSet = new Set(logs.map(log => log.groupId));
-  if (groupSet.size <= 2) {
-    score += 0;
-  } else {
-    score += 15;
+  function scoreGroupDiversity(logs) {
+    const groupSet = new Set(logs.map(log => log.groupId));
+    const count = groupSet.size;
+    if (count >= 3) return 1.0;
+    if (count === 2) return 0.6;
+    return 0.3;
   }
 
-  // 4. 操作频率评分（分桶：每小时统计）
-  const bucketMap = {};
-  for (const log of logs) {
-    const time = new Date(log.matchedAt);
-    const hourKey = `${time.getFullYear()}-${time.getMonth()}-${time.getDate()} ${time.getHours()}`;
-    if (!bucketMap[hourKey]) bucketMap[hourKey] = [];
-    bucketMap[hourKey].push(time.getTime());
-  }
+  function scoreFrequency(logs) {
+    const hourlyBuckets = {};
+    logs.forEach(log => {
+      const h = new Date(log.matchedAt).toISOString().slice(0, 13); // YYYY-MM-DDTHH
+      if (!hourlyBuckets[h]) hourlyBuckets[h] = [];
+      hourlyBuckets[h].push(new Date(log.matchedAt).getTime());
+    });
 
-  let freqLow = 0, freqMid = 0, freqHigh = 0;
-  const bucketKeys = Object.keys(bucketMap);
-  for (const key of bucketKeys) {
-    const times = bucketMap[key].sort((a, b) => a - b);
-    const intervals = [];
-    for (let i = 1; i < times.length; i++) {
-      intervals.push(times[i] - times[i - 1]);
+    let shortCount = 0, mediumCount = 0, longCount = 0, total = 0;
+    for (const times of Object.values(hourlyBuckets)) {
+      const sorted = times.sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i++) {
+        const diff = (sorted[i] - sorted[i - 1]) / 60000;
+        total++;
+        if (diff <= 2) shortCount++;
+        else if (diff <= 5) mediumCount++;
+        else longCount++;
+      }
     }
 
-    const avgInterval = intervals.length
-      ? intervals.reduce((a, b) => a + b, 0) / intervals.length
-      : Infinity;
+    if (total === 0) return 0.5;
+    const shortRatio = shortCount / total;
+    const mediumRatio = mediumCount / total;
 
-    const avgMin = avgInterval / 1000 / 60;
-    if (avgMin < 2) freqHigh++;
-    else if (avgMin <= 5) freqMid++;
-    else freqLow++;
+    if (shortRatio > 0.5) return 0.2;
+    if (mediumRatio > 0.5) return 0.5;
+    return 1.0;
   }
 
-  const totalBuckets = freqLow + freqMid + freqHigh;
-  if (totalBuckets > 0) {
-    const ratioHigh = freqHigh / totalBuckets;
-    if (ratioHigh > 0.5) score -= 20;
-    else if (freqMid / totalBuckets > 0.5) score -= 5;
-    else if (freqLow / totalBuckets > 0.5) score += 10;
-  }
+  const score1 = scoreTimeSpanScore(logs);
+  const score2 = scoreGroupDiversity(logs);
+  const score3 = scoreFrequency(logs);
 
-  // 限制分数范围 0 - 100
-  score = Math.max(0, Math.min(score, 100));
-
-  // 返回“是托”的概率
-  const probability = Math.round((100 - score) * 10) / 10; // 四舍五入到 1 位小数
-  return probability; // 比如：66.7 表示“66.7%是托的概率”
+  const averageScore = (score1 + score2 + score3) / 3;
+  const tuoProbability = Math.round((1 - averageScore) * 1000) / 10; // 保留1位小数
+  return tuoProbability; // 例如：33.2 表示托的概率为33.2%
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
