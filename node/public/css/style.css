@@ -9,6 +9,8 @@ body {
     background-color: #FFF;
     font-size: 14px;
 }
+
+/** 布局 */
 .lk-container{
     height: 100%;
     display: flex;
@@ -17,6 +19,7 @@ body {
 .lk-container .main {
     padding: 5px 10px;
     flex: 1;
+    overflow: hidden;
     display: flex;
 }
 .lk-container .main .main-left,
@@ -25,16 +28,49 @@ body {
     background: white;
     border-radius: 6px;
     flex: 1;
+    overflow: hidden;
 }
 .lk-container .main .main-left {
     overflow-y: auto;
 }
 
-
-thead{
+/** 表格 */
+table {
+    width: 100%;
+    background-color: #fff;
+    border: solid 1px #ebebeb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+table>thead{
     position: sticky;
     top: 0;
 }
+table th {
+    background: #F2F6FC;
+    color: #333;
+    font-weight: 500;
+    padding: 6px 12px;
+    text-align: left;
+}
+table td {
+    padding: 4px 12px;
+    border-top: 1px solid #ebebeb;
+    border-right: 1px solid #ebeef5;
+    color: #606266;
+}
+table tr.active {
+    background-color: #F56C6C !important;
+}
+table tr.active td{
+    color: #fff;
+}
+table tr:hover {
+    background-color: #f9fafc;
+}
+
+
+
 #gameConfigEditor>div label{
     color: #333;
     font-weight: bold;
@@ -53,39 +89,7 @@ thead{
     border-radius: 4px;
 }
 
-table {
-    width: 100%;
-    background-color: #fff;
-    border: solid 1px #ebebeb;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-}
 
-table th {
-    background: #F2F6FC;
-    color: #333;
-    font-weight: 500;
-    padding: 6px 12px;
-    text-align: left;
-    
-}
-
-table td {
-    padding: 4px 12px;
-    border-top: 1px solid #ebebeb;
-    border-right: 1px solid #ebeef5;
-    color: #606266;
-}
-
-table tr.active {
-    background-color: #F56C6C !important;
-}
-table tr.active td{
-    color: #fff;
-}
-table tr:hover {
-    background-color: #f9fafc;
-}
 
 button {
     padding: 6px 12px;
@@ -116,7 +120,7 @@ a:hover {
   
 
 /** 日志界面 */
-.ulogs{
+/* .ulogs{
     flex-direction: column;
     overflow: hidden;
 }
@@ -194,4 +198,4 @@ a:hover {
 
 #configPanel .keyword-input{
     color: red;
-}
+} */
