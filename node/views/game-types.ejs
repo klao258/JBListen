@@ -44,6 +44,7 @@
         <form id="gameForm" method="post" action="/game-types/save" class="space-y-4">
             <input type="hidden" name="mode" id="formMode">
             <input type="hidden" name="name" id="inputName">
+            <input type="hidden" name="label" id="hiddenLabel">
     
             <div>
                 <label class="block text-sm text-gray-700">id (需要唯一)</label>
@@ -82,6 +83,7 @@
         document.getElementById('inputName').value = game.name || '';
         document.getElementById('displayName').value = game.name || '';
         document.getElementById('inputLabel').value = game.label || '';
+        document.getElementById('hiddenLabel').value = game.label || '';  // ✅ 关键补充
         document.getElementById('inputDescription').value = game.description || '';
         document.getElementById('inputPush').value = (game.push || []).join(', ');
         
