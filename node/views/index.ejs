@@ -7,49 +7,50 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-  <%- include('header', { currentPath: request.path }) %>
-  <div class="main">
-    <!-- 左侧群列表 -->
-    <div class="left">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>群ID</th>
-            <th>群名</th>
-            <th center>是否监听</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% groups.forEach((group, index) => { %>
-            <tr id="row-<%= group.groupId %>" onclick="selectGroup('<%= group.groupId %>')" style="cursor: pointer;">
-              <td><%= index %></td>
-              <td><%= group.groupId %></td>
-              <td><%= group.groupName %></td>
-              <td>
-                <span onclick="event.stopPropagation(); toggleWatch('<%= group.groupId %>', this)" style="cursor:pointer;">
-                  <%= group.isWatched ? '✅' : '❌' %>
-                </span>
-              </td>
+  <div class="lk-container">
+    <%- include('header', { currentPath: request.path }) %>
+    <div class="main">
+      <!-- 左侧群列表 -->
+      <div class="main-left">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>群ID</th>
+              <th>群名</th>
+              <th center>是否监听</th>
             </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <% groups.forEach((group, index) => { %>
+              <tr id="row-<%= group.groupId %>" onclick="selectGroup('<%= group.groupId %>')" style="cursor: pointer;">
+                <td><%= index %></td>
+                <td><%= group.groupId %></td>
+                <td><%= group.groupName %></td>
+                <td>
+                  <span onclick="event.stopPropagation(); toggleWatch('<%= group.groupId %>', this)" style="cursor:pointer;">
+                    <%= group.isWatched ? '✅' : '❌' %>
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
 
-    <!-- 右侧关键词配置 -->
-    <div class="right" id="configPanel" style="display:none;">
-      <form method="post" action="/group-configs/save">
-        <h3 id="groupTitle">群组关键词：</h3>
-        <input type="hidden" name="groupId" id="groupIdField">
-        <input type="hidden" name="groupName" id="groupNameField">
-        <input type="hidden" name="gameConfigs" id="gameConfigsField">
-        <div id="gameConfigEditor"></div>
-        <button type="submit" class="on">保存配置</button>
-      </form>
+      <!-- 右侧关键词配置 -->
+      <div class="main-right" id="configPanel" style="display:none;">
+        <form method="post" action="/group-configs/save">
+          <h3 id="groupTitle">群组关键词：</h3>
+          <input type="hidden" name="groupId" id="groupIdField">
+          <input type="hidden" name="groupName" id="groupNameField">
+          <input type="hidden" name="gameConfigs" id="gameConfigsField">
+          <div id="gameConfigEditor"></div>
+          <button type="submit" class="on">保存配置</button>
+        </form>
+      </div>
     </div>
   </div>
-
 <script>
   const groupList = <%- JSON.stringify(groups) %>;
   const gameTypes = <%- JSON.stringify(gameTypes) %>;
