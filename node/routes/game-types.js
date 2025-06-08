@@ -7,7 +7,7 @@ const router = new Router();
 // ✅ 渲染游戏管理页面
 router.get('/game-types', async ctx => {
     const games = await GameType.find().sort({ name: 1 });
-    await ctx.render('game', {
+    await ctx.render('/game-types', {
         games,
         request: { path: ctx.path }
     });
