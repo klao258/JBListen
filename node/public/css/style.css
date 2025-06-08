@@ -18,10 +18,13 @@ body {
 }
 .left, .right {
     height: 100%;
-    overflow-y: scroll;
+    
     background: white;
     border-radius: 6px;
     flex: 1;
+}
+.left {
+    overflow-y: auto;
 }
 thead{
     position: sticky;
