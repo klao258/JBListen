@@ -8,78 +8,92 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  if (!logs || logs.length === 0) return 50;
+  if (!logs || logs.length === 0) return 50.0;
 
   const totalLogs = logs.length;
+  if (totalLogs < 500) return 50.0;
+
   const groupedByHour = {};
   const groupSet = new Set();
-  const gameSet = new Set();
+  const timestamps = [];
 
-  const timestamps = logs.map(log => new Date(log.matchedAt).getTime()).sort((a, b) => a - b);
-  const startTime = timestamps[0];
-  const endTime = timestamps[timestamps.length - 1];
-  const spanHours = (endTime - startTime) / (1000 * 60 * 60);
+  for (const log of logs) {
+    const ts = new Date(log.matchedAt).getTime();
+    timestamps.push(ts);
+    const hourKey = new Date(ts).getHours();
+    if (!groupedByHour[hourKey]) groupedByHour[hourKey] = [];
+    groupedByHour[hourKey].push(ts);
 
-  // 1. 统计群组和游戏种类数
-  logs.forEach(log => {
-    groupSet.add(log.groupName);
-    gameSet.add(log.gameType);
-
-    const hour = new Date(log.matchedAt).getHours();
-    groupedByHour[hour] = groupedByHour[hour] || [];
-    groupedByHour[hour].push(log);
-  });
-
-  const groupCount = groupSet.size;
-  const gameCount = gameSet.size;
-
-  // 2. 按小时分桶计算相邻间隔时间
-  let shortIntervals = 0;
-  let mediumIntervals = 0;
-  let longIntervals = 0;
-  let totalPairs = 0;
-
-  for (const hourLogs of Object.values(groupedByHour)) {
-    const sorted = hourLogs.map(l => new Date(l.matchedAt).getTime()).sort((a, b) => a - b);
-    for (let i = 1; i < sorted.length; i++) {
-      const diffMin = (sorted[i] - sorted[i - 1]) / 1000 / 60;
-      totalPairs++;
-      if (diffMin <= 2) shortIntervals++;
-      else if (diffMin <= 5) mediumIntervals++;
-      else longIntervals++;
-    }
+    if (log.groupId) groupSet.add(log.groupId);
   }
 
-  const shortRate = shortIntervals / totalPairs;
-  const mediumRate = mediumIntervals / totalPairs;
-  const longRate = longIntervals / totalPairs;
-  
-  // 3. 日志量太少时，趋向中性
-  let baseScore = 50;
-  if (totalLogs < 500) baseScore = 50;
+  timestamps.sort((a, b) => a - b);
+  const durationMs = timestamps[timestamps.length - 1] - timestamps[0];
+  const durationHours = durationMs / (1000 * 60 * 60);
 
-  // 4. 时间跨度影响（动态判断）
-  const idealActiveHoursPerDay = 10; // 高活跃容错
-  const idealLogRate = 60 / 2; // 每小时最多触发数（2分钟一次）
-  const expectedHours = totalLogs / idealLogRate;
-  const expectedDays = expectedHours / idealActiveHoursPerDay;
-  const actualDays = spanHours / 24;
+  const groupCount = groupSet.size;
 
-  if (actualDays < expectedDays * 0.6) baseScore += 15;
-  else if (actualDays > expectedDays * 1.2) baseScore -= 10;
+  // ----- ⬇️ 日志活跃时间评分（基于理论最少活跃时间） -----
+  const realisticActiveHours = 12; // 假定人类每日最多活跃时间
+  const expectedHours = (totalLogs * 3) / 60; // 按3分钟/条推算理论需要小时数
+  const expectedSpan = Math.max(expectedHours / realisticActiveHours, 1); // 所需自然日跨度
 
-  // 5. 群组权重
-  if (groupCount >= 3) baseScore -= 15;
-  else if (groupCount <= 1) baseScore += 10;
+  const actualSpan = Math.max(durationHours / 24, 1); // 实际跨越自然日数
 
-  // 6. 操作频率
-  if (shortRate > 0.5) baseScore += 15;
-  else if (mediumRate > 0.5) baseScore += 5;
-  else baseScore -= 10;
+  let activeScore = 50;
+  if (actualSpan < expectedSpan) {
+    activeScore -= 20 * ((expectedSpan - actualSpan) / expectedSpan); // 时间越短扣分越多
+  } else if (actualSpan > expectedSpan * 1.5) {
+    activeScore += 10 * ((actualSpan - expectedSpan) / expectedSpan); // 时间过长适度加分
+  }
+  activeScore = Math.max(10, Math.min(90, activeScore));
 
-  // 范围限制
-  baseScore = Math.min(100, Math.max(0, baseScore));
-  return baseScore;
+  // ----- ⬇️ 群组覆盖评分 -----
+  let groupScore = 50;
+  if (groupCount >= 3) groupScore += 15;
+  else if (groupCount === 2) groupScore += 5;
+  else if (groupCount === 1) groupScore -= 10;
+
+  // ----- ⬇️ 操作频率（分桶）分析 -----
+  let frequencyScore = 50;
+  let totalBuckets = 0;
+  let ultraFastBuckets = 0;
+  let fastBuckets = 0;
+  let moderateBuckets = 0;
+
+  for (const hour in groupedByHour) {
+    const timestamps = groupedByHour[hour].sort((a, b) => a - b);
+    const gaps = [];
+    for (let i = 1; i < timestamps.length; i++) {
+      const gapMin = (timestamps[i] - timestamps[i - 1]) / 60000;
+      gaps.push(gapMin);
+    }
+    if (gaps.length === 0) continue;
+
+    const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+
+    totalBuckets++;
+    if (avgGap <= 2) ultraFastBuckets++;
+    else if (avgGap <= 5) fastBuckets++;
+    else moderateBuckets++;
+  }
+
+  if (totalBuckets > 0) {
+    const ultraRatio = ultraFastBuckets / totalBuckets;
+    const fastRatio = fastBuckets / totalBuckets;
+
+    if (ultraRatio > 0.5) frequencyScore -= 25;
+    else if (ultraRatio + fastRatio > 0.5) frequencyScore -= 15;
+    else if (moderateBuckets / totalBuckets > 0.6) frequencyScore += 10;
+  }
+
+  // 权重计算
+  const finalScore =
+    0.4 * (100 - activeScore) +
+    0.3 * (100 - groupScore) +
+    0.3 * (100 - frequencyScore);
+
+  return Math.max(0, Math.min(100, parseFloat(finalScore.toFixed(1))));
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
