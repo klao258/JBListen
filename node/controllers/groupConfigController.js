@@ -6,11 +6,11 @@ exports.getAll = async ctx => {
   await ctx.render('group-configs', { groups });
 };
 
-exports.detail = async ctx => {
-  const group = await GroupConfig.findOne({ groupId: ctx.params.groupId });
-  const gameTypes = await GameType.find();
-  await ctx.render('group-detail', { group, gameTypes });
-};
+// exports.detail = async ctx => {
+//   const group = await GroupConfig.findOne({ groupId: ctx.params.groupId });
+//   const gameTypes = await GameType.find();
+//   await ctx.render('group-detail', { group, gameTypes });
+// };
 
 exports.save = async ctx => {
   const { groupId, groupName } = ctx.request.body;
