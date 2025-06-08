@@ -49,6 +49,7 @@ router.post('/game-types/save', async ctx => {
         const existingIndex = group.gameConfigs.findIndex(cfg => cfg.gameType === name);
   
         if (existingIndex !== -1) {
+            group.gameConfigs[existingIndex].gameType = name;
             group.gameConfigs[existingIndex].gameLabel = label;
         } else {
             group.gameConfigs.push({
