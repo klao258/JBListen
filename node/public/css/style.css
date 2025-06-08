@@ -92,43 +92,9 @@ table tr:hover {
     border-radius: 4px;
 }
 
-
-
-/* button {
-    padding: 6px 12px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-button.on {
-    background-color: #67C23A;
-    color: white;
-}
-
-button.off {
-    background-color: #F56C6C;
-    color: white;
-}
-
-a {
-    color: #409EFF;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-} */
-  
-
 /** 日志界面 */
-.ulogs{
-    flex-direction: column;
-    overflow: hidden;
-}
-.ulogs .ulogs-table{
+/* .ulogs .ulogs-table{
     flex: 1;
     overflow-y: scroll;
-}
+} */
 

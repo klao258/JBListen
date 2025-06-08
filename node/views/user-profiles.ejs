@@ -3,7 +3,7 @@
 
 <div class="lk-container">
     <%- include('header', { currentPath: request.path }) %>
-    <div class="main user">
+    <div class="main flex flex-col user">
         <form id="filterForm" method="get" action="/user-profiles" class="flex flex-wrap items-center gap-4 mb-6 text-sm">
             <div class="flex items-center gap-1">
             <label for="userId" class="text-gray-700">用户ID:</label>
@@ -23,7 +23,7 @@
             <button type="submit" class="px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600">查询</button>
         </form>
 
-        <div class="overflow-x-auto">
+        <div class="flex-1 overflow-y-auto">
             <table class="min-w-full text-sm text-left text-gray-700 border border-gray-200 rounded">
             <thead class="bg-gray-100 text-gray-800">
                 <tr>

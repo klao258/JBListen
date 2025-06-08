@@ -3,7 +3,7 @@
 
 <div class="lk-container">
   <%- include('header', { currentPath: request.path }) %>
-  <div class="main ulogs">
+  <div class="main flex flex-col ulogs">
       <form id="filterForm" method="get" action="/user-logs" class="flex flex-wrap items-center gap-4 text-sm">
 
           <!-- 用户 ID -->
@@ -55,7 +55,7 @@
           </div>
       </form>
 
-      <div class="overflow-x-auto ulogs-table mt-1 rounded border border-gray-200">
+      <div class="flex-1 overflow-y-auto ulogs-table mt-1 rounded border border-gray-200">
           <table class="min-w-full text-sm text-left text-gray-700">
             <thead class="bg-gray-100 text-gray-800 border-b border-gray-200">
               <tr>
