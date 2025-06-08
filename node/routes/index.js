@@ -1,8 +1,8 @@
 const Router = require('koa-router');
 const GroupConfig = require('../models/GroupConfig');
 const GameType = require('../models/GameType');
-const userProfilesRoute = require('./user-profiles');
-const gameTypesRoute = require('./game-types');
+const userProfilesRoute = require('./userProfiles');
+const gameTypesRoute = require('./gameTypes');
 const userLogsRoute = require('./userLogs');
 const pushRoute = require('./push');
 
