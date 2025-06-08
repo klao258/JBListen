@@ -66,6 +66,7 @@
                 <th class="px-4 py-2 whitespace-nowrap">群组</th>
                 <th class="px-4 py-2 whitespace-nowrap">游戏类型</th>
                 <th class="px-4 py-2 whitespace-nowrap">消息内容</th>
+                <th class="px-4 py-2 whitespace-nowrap">触发规则</th>
                 <th class="px-4 py-2 whitespace-nowrap">发送时间</th>
                 <th class="px-4 py-2 whitespace-nowrap">触发时间</th>
               </tr>
@@ -88,6 +89,7 @@
                   <td class="px-4 py-2"><%= log?.groupName || '-' %></td>
                   <td class="px-4 py-2"><%= log?.gameLabel || '-' %></td>
                   <td class="px-4 py-2 break-all max-w-sm"><%= log?.originalMessage || '' %></td>
+                  <td class="px-4 py-2 break-all max-w-sm"><%= log?.matchedKeywords || '' %></td>
                   <td class="px-4 py-2 whitespace-nowrap"><%= log?.sendDateTime || '-' %></td>
                   <td class="px-4 py-2 whitespace-nowrap"><%= log?.formattedTime || '-' %></td>
                 </tr>
