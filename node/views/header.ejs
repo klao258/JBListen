@@ -1,0 +1,33 @@
+<nav class="bg-gray-800 text-white px-6 py-3 shadow-md">
+    <div class="container mx-auto flex items-center justify-between">
+      <!-- Logo -->
+      <div class="text-lg font-semibold tracking-wide">
+        监听管理系统
+      </div>
+  
+      <!-- 导航链接 -->
+      <ul class="flex space-x-6 text-sm">
+        <li>
+          <a href="/group-configs" class="hover:text-yellow-400 <%= currentPath === '/group-configs' ? 'text-yellow-400 font-bold' : '' %>">
+            群组管理
+          </a>
+        </li>
+        <li>
+          <a href="/user-profiles" class="hover:text-yellow-400 <%= currentPath === '/user-profiles' ? 'text-yellow-400 font-bold' : '' %>">
+            用户管理
+          </a>
+        </li>
+        <li>
+          <a href="/game-types" class="hover:text-yellow-400 <%= currentPath === '/game-types' ? 'text-yellow-400 font-bold' : '' %>">
+            游戏管理
+          </a>
+        </li>
+        <li>
+          <a href="/user-logs" class="hover:text-yellow-400 <%= currentPath === '/user-logs' ? 'text-yellow-400 font-bold' : '' %>">
+            日志管理
+          </a>
+        </li>
+      </ul>
+    </div>
+</nav>
+  
