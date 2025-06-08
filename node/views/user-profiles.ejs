@@ -32,7 +32,6 @@
                 <th class="px-3 py-2 border-b">用户昵称</th>
                 <th class="px-3 py-2 border-b">用户名</th>
                 <th class="px-3 py-2 border-b text-center">是否托</th>
-                <th class="px-3 py-2 border-b text-center">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -41,7 +40,7 @@
                     <td class="px-3 py-2"><%= index + 1 + (currentPage - 1) * pageSize %></td>
                     <td class="px-3 py-2"><%= user.userId %></td>
                     <td class="px-3 py-2"><%= user.nickname || '-' %></td>
-                    <td class="px-4 py-2 text-blue-600">
+                    <td class="px-3 py-2 text-blue-600">
                         <% if (user?.username) { %>
                           <a href="https://t.me/<%= user.username %>" target="_blank" class="hover:underline">
                             <%= user.username.indexOf('@') === -1 ? '@' + user.username : user.username %>
@@ -51,15 +50,12 @@
                         <% } %>
                     </td>
                     <td class="px-3 py-2 text-center">
-                        <%= user.isTuo ? '✅' : '' %>
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                    <form method="post" action="/user-profiles/toggle-tuo" onsubmit="return confirm('Confirm toggle isTuo for this user?')">
-                        <input type="hidden" name="userId" value="<%= user.userId %>">
-                        <button type="submit" class="text-blue-600 hover:underline">
-                        <%= user.isTuo ? '取消托' : '设为托' %>
-                        </button>
-                    </form>
+                        <form method="post" action="/user-profiles/toggle-tuo" onsubmit="return confirm('Confirm toggle isTuo for this user?')">
+                            <input type="hidden" name="userId" value="<%= user.userId %>">
+                            <button type="submit" class="text-blue-600 hover:underline">
+                            <%= user.isTuo ? '✅' : '❌' %>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 <% }) %>
