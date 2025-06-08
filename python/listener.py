@@ -99,6 +99,8 @@ async def listener(event):
     
     user = users.find_one({ "userId": str(event.sender_id) })
     if user:
+        if user.get("isTuo") is True:
+            return  # ✅ 如果是托账号，直接跳过处理
         userId = user["userId"]
         username = user.get("username", "")
         nickname = user.get("nickname", "")

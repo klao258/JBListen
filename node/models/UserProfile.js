@@ -10,7 +10,8 @@ const UserProfileSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
   username: { type: String },
   nickname: { type: String },
-  groups: [GroupGameSchema]
+  groups: [GroupGameSchema],
+  isTuo: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('UserProfile', UserProfileSchema);
