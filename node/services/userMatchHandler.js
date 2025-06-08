@@ -8,53 +8,50 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  const scoreWeights = {
-      multiGroup: 0.4,       // 跨群活跃权重
-      multiGame: 0.2,        // 多游戏类型权重
-      frequency: 0.4         // 高频行为权重（动态）
-  };
+  if (!logs || logs.length === 0) return 0;
 
-  if (!Array.isArray(logs) || logs.length === 0) return 0;
+  // 1. 用户涉及群组和游戏类型数量
+  const groupSet = new Set();
+  const gameSet = new Set();
+  const timeDiffs = [];
 
-  // --- 预处理：按时间排序
-  logs.sort((a, b) => new Date(a.matchedAt) - new Date(b.matchedAt));
+  logs.forEach((log, idx) => {
+    groupSet.add(log.groupId);
+    gameSet.add(log.gameType);
 
-  // --- 1. 跨群评分（越多群活跃越真实）
-  const groupSet = new Set(logs.map(log => log.groupId));
-  const groupScore = Math.min(groupSet.size / 3, 1) * 100 * scoreWeights.multiGroup;
+    if (idx > 0) {
+      const prev = new Date(logs[idx - 1].matchedAt).getTime();
+      const curr = new Date(log.matchedAt).getTime();
+      const diffSec = Math.abs(curr - prev) / 1000;
+      timeDiffs.push(diffSec);
+    }
+  });
 
-  // --- 2. 多类型评分（多游戏类型略加分）
-  const gameSet = new Set(logs.map(log => log.gameType));
-  const gameScore = Math.min(gameSet.size / 5, 1) * 100 * scoreWeights.multiGame;
+  const isSingleGroup = groupSet.size === 1;
+  const isSingleGame = gameSet.size === 1;
 
-  // --- 3. 触发间隔分析（动态频率判断）
-  const intervals = [];
-  for (let i = 1; i < logs.length; i++) {
-    const prev = new Date(logs[i - 1].matchedAt).getTime();
-    const curr = new Date(logs[i].matchedAt).getTime();
-    intervals.push(curr - prev);
-  }
+  // 2. 高频触发比例（小于3分钟间隔）
+  const highFreqRatio = timeDiffs.filter(d => d < 180).length / timeDiffs.length;
 
-  let short = 0, medium = 0, long = 0;
-  for (const t of intervals) {
-    if (t < 10_000) short++;
-    else if (t < 60_000) medium++;
-    else long++;
-  }
+  // 3. 评分模型
+  let score = 50; // 中性分
 
-  const total = intervals.length || 1;
-  const shortRate = short / total;
-  const mediumRate = medium / total;
+  if (isSingleGroup) score -= 10;
+  if (isSingleGame) score -= 10;
+  if (highFreqRatio >= 0.7) score -= 20;
+  if (logs.length >= 1000) score -= 10; // 满库惩罚
 
-  let freqScore = 0;
-  if (shortRate > 0.4) freqScore += 50;
-  else if (shortRate > 0.25) freqScore += 30;
-  else if (shortRate > 0.1) freqScore += 10;
-  if (mediumRate > 0.5 && shortRate < 0.1) freqScore += 10;
-  freqScore = 100 - Math.min(freqScore, 100); // 高频 => 降分
+  // 加分项：多群多游戏
+  score += Math.min(10, groupSet.size * 2 + gameSet.size);
 
-  const finalScore = groupScore + gameScore + freqScore * scoreWeights.frequency;
-  return Math.round(finalScore);
+  // 限制范围 [0, 100]
+  score = Math.max(0, Math.min(100, score));
+
+  // 4. 映射为概率（Sigmoid函数压缩）
+  const probability = 1 / (1 + Math.exp((score - 50) / 6));
+  const percent = parseFloat((probability * 100).toFixed(1));
+
+  return percent; // 例如 84.3 表示“84.3% 可能是托”
 }
 
 // 计算概率
@@ -135,7 +132,7 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
   if (JSON.stringify(matchedGames) === '{}') return;
 
   // Step 1: 写入日志
-  const score = await insertUserLog({ userId,  username, nickname, groupId,  groupName, sendDateTime,  ...matchedGames })
+  const pr = await insertUserLog({ userId,  username, nickname, groupId,  groupName, sendDateTime,  ...matchedGames })
 
   // Step 2: 写入用户信息表
   let profile = await UserProfile.findOne({ userId });
@@ -164,6 +161,6 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
     gameType: matchedGames.gameType,
     gameLabel: matchedGames.gameLabel,
     originalMessage: message,
-    pr: calculateTuoProbability(score)
+    pr
   });
 };
