@@ -4,7 +4,7 @@
 <div class="lk-container">
     <%- include('header', { currentPath: request.path }) %>
     <div class="main flex flex-col user">
-        <form id="filterForm" method="get" action="/user-profiles" class="flex flex-wrap items-center gap-4 mb-6 text-sm">
+        <form id="filterForm" method="get" action="/user-profiles" class="flex flex-wrap items-center gap-4 text-sm">
             <div class="flex items-center gap-1">
             <label for="userId" class="text-gray-700">用户ID:</label>
             <input type="text" id="userId" name="userId" value="<%= query.userId || '' %>" class="border rounded px-2 py-1 w-36">
