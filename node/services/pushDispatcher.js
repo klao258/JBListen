@@ -12,7 +12,7 @@ const TGPush = require('./bot');
  * @param {String} param0.groupName       当前消息触发的群组名称
  * @param {Object} param0.user            用户对象 { id, nickname, username }
  */
-exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName, user }) => {
+exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName, user, pr }) => {
     const game = await GameType.findOne({ name: gameType });
     if (!game || !Array.isArray(game.push) || game.push.length === 0) return;
 
@@ -36,7 +36,7 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
       用户ID：<code>${user.id}</code>
       昵称：<b>${user.nickname || '未知'}</b>
       用户名：${user.username ? '@' + user.username : '无'}
-      托概率：${pr}
+      托概率：${pr}%
       触发群组：<b>${groupName}</b>
       游戏类型：<b>${gameLabel}</b>
       消息内容：${originalMessage}
