@@ -80,7 +80,7 @@ const insertUserLog = async (logData) => {
 
   const logs = await GameMatchLog.find({ userId }).sort({ matchedAt: -1 }).limit(1000);
   const score = calculateUserScore(logs)
-  return logs
+  return score
 }
 
 /** 文本不超16，换行符不超1个，必须包含大于0的数字 */
