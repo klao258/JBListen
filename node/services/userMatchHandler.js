@@ -8,63 +8,83 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  if (!logs || logs.length === 0) return 0;
+  if (!logs || logs.length === 0) return 50; // 默认中性值
 
-  // 1. 用户涉及群组和游戏类型数量
-  const groupSet = new Set();
-  const gameSet = new Set();
-  const timeDiffs = [];
+  const maxLogs = 1000;
+  const totalLogs = logs.length;
+  const baseScore = 50;
 
-  logs.forEach((log, idx) => {
-    groupSet.add(log.groupId);
-    gameSet.add(log.gameType);
+  let score = baseScore;
 
-    if (idx > 0) {
-      const prev = new Date(logs[idx - 1].matchedAt).getTime();
-      const curr = new Date(log.matchedAt).getTime();
-      const diffSec = Math.abs(curr - prev) / 1000;
-      timeDiffs.push(diffSec);
+  // 1. 日志数量不足 500 条：中性处理
+  if (totalLogs < 500) {
+    score += 0; // 保持中性
+  }
+
+  // 2. 时间跨度评分
+  const first = new Date(logs[logs.length - 1].matchedAt);
+  const last = new Date(logs[0].matchedAt);
+  const durationMs = last - first;
+  const durationHours = durationMs / (1000 * 60 * 60);
+
+  if (durationHours <= 24) {
+    score -= 15;
+  } else if (durationHours <= 72) {
+    score += 0;
+  } else {
+    score += 10;
+  }
+
+  // 3. 群组评分
+  const groupSet = new Set(logs.map(log => log.groupId));
+  if (groupSet.size <= 2) {
+    score += 0;
+  } else {
+    score += 15;
+  }
+
+  // 4. 操作频率评分（分桶：每小时统计）
+  const bucketMap = {};
+  for (const log of logs) {
+    const time = new Date(log.matchedAt);
+    const hourKey = `${time.getFullYear()}-${time.getMonth()}-${time.getDate()} ${time.getHours()}`;
+    if (!bucketMap[hourKey]) bucketMap[hourKey] = [];
+    bucketMap[hourKey].push(time.getTime());
+  }
+
+  let freqLow = 0, freqMid = 0, freqHigh = 0;
+  const bucketKeys = Object.keys(bucketMap);
+  for (const key of bucketKeys) {
+    const times = bucketMap[key].sort((a, b) => a - b);
+    const intervals = [];
+    for (let i = 1; i < times.length; i++) {
+      intervals.push(times[i] - times[i - 1]);
     }
-  });
 
-  const isSingleGroup = groupSet.size === 1;
-  const isSingleGame = gameSet.size === 1;
+    const avgInterval = intervals.length
+      ? intervals.reduce((a, b) => a + b, 0) / intervals.length
+      : Infinity;
 
-  // 2. 高频触发比例（小于3分钟间隔）
-  const highFreqRatio = timeDiffs.filter(d => d < 180).length / timeDiffs.length;
+    const avgMin = avgInterval / 1000 / 60;
+    if (avgMin < 2) freqHigh++;
+    else if (avgMin <= 5) freqMid++;
+    else freqLow++;
+  }
 
-  // 3. 评分模型
-  let score = 50; // 中性分
+  const totalBuckets = freqLow + freqMid + freqHigh;
+  if (totalBuckets > 0) {
+    const ratioHigh = freqHigh / totalBuckets;
+    if (ratioHigh > 0.5) score -= 20;
+    else if (freqMid / totalBuckets > 0.5) score -= 5;
+    else if (freqLow / totalBuckets > 0.5) score += 10;
+  }
 
-  if (isSingleGroup) score -= 10;
-  if (isSingleGame) score -= 10;
-  if (highFreqRatio >= 0.7) score -= 20;
-  if (logs.length >= 1000) score -= 10; // 满库惩罚
+  // 限制分数范围 0 - 100
+  score = Math.max(0, Math.min(score, 100));
 
-  // 加分项：多群多游戏
-  score += Math.min(10, groupSet.size * 2 + gameSet.size);
-
-  // 限制范围 [0, 100]
-  score = Math.max(0, Math.min(100, score));
-
-  // 4. 映射为概率（Sigmoid函数压缩）
-  const probability = 1 / (1 + Math.exp((score - 50) / 6));
-  const percent = parseFloat((probability * 100).toFixed(1));
-
-  return percent; // 例如 84.3 表示“84.3% 可能是托”
-}
-
-// 计算概率
-const calculateTuoProbability = (score) => {
-  // score: 0~100（越低越可能是托）
-  // 将评分标准化到 [-6, 6] 区间
-  const normalized = (50 - score) / 10;
-
-  // 使用 sigmoid 平滑转换为概率（0~1）
-  const probability = 1 / (1 + Math.exp(-normalized));
-
-  // 返回百分比，保留一位小数
-  return +(probability * 100).toFixed(1);
+  // 返回“是托”的概率
+  const probability = Math.round((100 - score) * 10) / 10; // 四舍五入到 1 位小数
+  return probability; // 比如：66.7 表示“66.7%是托的概率”
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
@@ -89,8 +109,8 @@ const insertUserLog = async (logData) => {
   }
 
   const logs = await GameMatchLog.find({ userId }).sort({ matchedAt: -1 }).limit(1000);
-  const score = calculateUserScore(logs)
-  return score
+  const pr = calculateUserScore(logs)
+  return pr
 }
 
 /** 文本不超16，换行符不超1个，必须包含大于0的数字 */
