@@ -6,21 +6,21 @@
     <div class="main user">
         <form id="filterForm" method="get" action="/user-profiles" class="flex flex-wrap items-center gap-4 mb-6 text-sm">
             <div class="flex items-center gap-1">
-            <label for="userId" class="text-gray-700">User ID:</label>
+            <label for="userId" class="text-gray-700">用户ID:</label>
             <input type="text" id="userId" name="userId" value="<%= query.userId || '' %>" class="border rounded px-2 py-1 w-36">
             </div>
 
             <div class="flex items-center gap-1">
-            <label for="username" class="text-gray-700">Username:</label>
+            <label for="username" class="text-gray-700">用户名:</label>
             <input type="text" id="username" name="username" value="<%= query.username || '' %>" class="border rounded px-2 py-1 w-36">
             </div>
 
             <div class="flex items-center gap-1">
-            <label for="nickname" class="text-gray-700">Nickname:</label>
+            <label for="nickname" class="text-gray-700">用户昵称:</label>
             <input type="text" id="nickname" name="nickname" value="<%= query.nickname || '' %>" class="border rounded px-2 py-1 w-36">
             </div>
 
-            <button type="submit" class="px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600">Search</button>
+            <button type="submit" class="px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600">查询</button>
         </form>
 
         <div class="overflow-x-auto">
@@ -28,10 +28,10 @@
             <thead class="bg-gray-100 text-gray-800">
                 <tr>
                 <th class="px-3 py-2 border-b">#</th>
-                <th class="px-3 py-2 border-b">User ID</th>
-                <th class="px-3 py-2 border-b">Nickname</th>
-                <th class="px-3 py-2 border-b">Username</th>
-                <th class="px-3 py-2 border-b text-center">Is Tuo</th>
+                <th class="px-3 py-2 border-b">用户ID</th>
+                <th class="px-3 py-2 border-b">用户昵称</th>
+                <th class="px-3 py-2 border-b">用户名</th>
+                <th class="px-3 py-2 border-b text-center">是否托</th>
                 <th class="px-3 py-2 border-b text-center">Action</th>
                 </tr>
             </thead>
@@ -43,7 +43,7 @@
                     <td class="px-3 py-2"><%= user.nickname || '-' %></td>
                     <td class="px-3 py-2"><%= user.username || '-' %></td>
                     <td class="px-3 py-2 text-center">
-                    <%= user.isTuo ? '✅' : '❌' %>
+                        <%= user.isTuo ? '✅' : '' %>
                     </td>
                     <td class="px-3 py-2 text-center">
                     <form method="post" action="/user-profiles/toggle-tuo" onsubmit="return confirm('Confirm toggle isTuo for this user?')">
