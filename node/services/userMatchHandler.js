@@ -57,6 +57,19 @@ const calculateUserScore = (logs) => {
   return Math.round(finalScore);
 }
 
+// 计算概率
+const calculateTuoProbability = (score) => {
+  // score: 0~100（越低越可能是托）
+  // 将评分标准化到 [-6, 6] 区间
+  const normalized = (50 - score) / 10;
+
+  // 使用 sigmoid 平滑转换为概率（0~1）
+  const probability = 1 / (1 + Math.exp(-normalized));
+
+  // 返回百分比，保留一位小数
+  return +(probability * 100).toFixed(1);
+}
+
 // 记录日志, 单用户最大记录 1000 条日志
 const insertUserLog = async (logData) => {
   const { userId, username, nickname, groupId, groupName, sendDateTime, ...matchedGames } = logData;
@@ -123,7 +136,6 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
 
   // Step 1: 写入日志
   const score = await insertUserLog({ userId,  username, nickname, groupId,  groupName, sendDateTime,  ...matchedGames })
-  console.log('分值', score)
 
   // Step 2: 写入用户信息表
   let profile = await UserProfile.findOne({ userId });
@@ -152,6 +164,6 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
     gameType: matchedGames.gameType,
     gameLabel: matchedGames.gameLabel,
     originalMessage: message,
-    score
+    pr: calculateTuoProbability(score)
   });
 };
