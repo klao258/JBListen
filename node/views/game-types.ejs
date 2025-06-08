@@ -4,7 +4,7 @@
 <div class="lk-container">
     <%- include('header', { currentPath: request.path }) %>
     <div class="main flex flex-col game">
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-center">
             <button onclick="openGameModal('add')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">新增游戏</button>
         </div>
         
@@ -14,8 +14,8 @@
                     <tr>
                         <th class="px-3 py-2 border-b">id</th>
                         <th class="px-3 py-2 border-b">名称</th>
-                        <th class="px-3 py-2 border-b">描述</th>
-                        <th class="px-3 py-2 border-b">推送ID</th>
+                        <th class="px-4 py-2 border-b">描述</th>
+                        <th class="px-4 py-2 border-b">推送ID</th>
                         <th class="px-3 py-2 border-b text-center">操作</th>
                     </tr>
                 </thead>
@@ -25,7 +25,7 @@
                             <td class="px-3 py-2"><%= game.name %></td>
                             <td class="px-3 py-2"><%= game.label %></td>
                             <td class="px-4 py-2"><%= game.description || '-' %></td>
-                            <td class="px-3 py-2 break-all"><%= (game.push || []).join(', ') || '-' %></td>
+                            <td class="px-4 py-2 break-all"><%= (game.push || []).join(', ') || '-' %></td>
                             <td class="px-3 py-2 text-center">
                                 <button onclick='openGameModal("edit", <%- JSON.stringify(game) %>)'  class="text-blue-600 hover:underline">编辑</button>
                             </td>
