@@ -27,7 +27,7 @@ router.get('/user-profiles', async ctx => {
     total,
     currentPage,
     pageSize: size,
-    request: { path: ctx.path }
+    request: { path: '/user-profiles' }
   });
 });
 
