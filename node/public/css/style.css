@@ -4,7 +4,9 @@
     margin: 0;
     font-size: 14px;
 }
-body {
+html,body {
+    height: 100%;
+    overflow: hidden;
     font-family: 'Helvetica Neue', Arial, sans-serif;
     background-color: #FFF;
     font-size: 14px;
