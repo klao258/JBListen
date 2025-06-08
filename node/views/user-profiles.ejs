@@ -50,7 +50,7 @@
                         <% } %>
                     </td>
                     <td class="px-3 py-2 text-center">
-                        <form method="post" action="/user-profiles/toggle-tuo" onsubmit="return confirm('设托后，将不在监测该用户消息')">
+                        <form method="post" action="/user-profiles/toggle-tuo" onsubmit="return confirm(`${user.isTuo ? '设托后，将不在监测该用户消息' : '取消托后，将继续监测该用户消息'}`)">
                             <input type="hidden" name="userId" value="<%= user.userId %>">
                             <button type="submit" class="text-blue-600 hover:underline">
                                 <%= user.isTuo ? '✅' : '❌' %>
