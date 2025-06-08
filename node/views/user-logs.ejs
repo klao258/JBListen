@@ -75,7 +75,7 @@
               <% logs.forEach((log, index) => { %>
                 <tr class="hover:bg-gray-50">
                   <td class="px-4 py-2"><%= index + 1 %></td>
-                  <td class="px-3 py-2"><%= user.userId %></td>
+                  <td class="px-3 py-2"><%= log.userId %></td>
                   <td class="px-4 py-2"><%= log?.nickname || '未知' %></td>
                   <td class="px-4 py-2 text-blue-600">
                     <% if (log?.username) { %>
