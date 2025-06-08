@@ -9,7 +9,7 @@ router.get('/game-types', async ctx => {
     const games = await GameType.find().sort({ name: 1 });
     await ctx.render('/game-types', {
         games,
-        request: { path: ctx.path }
+        request: { path: '/game-types' }
     });
 });
 
