@@ -16,50 +16,51 @@ router.get('/game-types', async ctx => {
 // ✅ 保存新增/编辑游戏
 router.post('/game-types/save', async ctx => {
     const { mode, name, label, description, push } = ctx.request.body;
-
-    // 统一处理 push 字段：字符串 => 数组（去空格、过滤空值）
+  
     const pushArray = (push || '')
-        .split(',')
-        .map(id => id.trim())
-        .filter(Boolean);
-
+      .split(',')
+      .map(id => id.trim())
+      .filter(Boolean);
+  
     if (mode === 'add') {
-        // 防止重复
         const exists = await GameType.findOne({ name });
         if (exists) {
-        ctx.body = '游戏已存在';
-        return;
+            ctx.body = '游戏类型已存在';
+            return;
         }
-
-        await GameType.create({ name, label, description, push: pushArray });
-
+  
+        await GameType.create({ name, label, description, push: pushArray }); 
     } else if (mode === 'edit') {
         const game = await GameType.findOne({ name });
         if (!game) {
-        ctx.status = 404;
-        ctx.body = '未找到游戏';
-        return;
+            ctx.status = 404;
+            ctx.body = '未找到游戏';
+            return;
         }
-
+  
         game.description = description;
         game.push = pushArray;
         await game.save();
-
-        // ✅ 更新所有群组中引用该 game.name 的 label 或 push 映射
-        await GroupConfig.updateMany(
-        { 'games.name': name },
-        {
-            $set: {
-            'games.$[elem].push': pushArray,
-            'games.$[elem].description': description,
-            }
-        },
-        {
-            arrayFilters: [{ 'elem.name': name }]
-        }
-        );
     }
-
+  
+    // ✅ 同步所有 GroupConfig 中的 gameConfigs
+    const groups = await GroupConfig.find();
+    for (const group of groups) {
+        const existingIndex = group.gameConfigs.findIndex(cfg => cfg.gameType === name);
+  
+        if (existingIndex !== -1) {
+            group.gameConfigs[existingIndex].gameLabel = label;
+        } else {
+            group.gameConfigs.push({
+                gameType: name,
+                gameLabel: label,
+                keywords: []
+            });
+        }
+  
+        await group.save();
+    }
+  
     ctx.redirect('/game-types');
 });
 
