@@ -10,70 +10,76 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 const calculateUserScore = (logs) => {
   if (!logs || logs.length === 0) return 50;
 
-  const MINUTES_PER_DAY_ACTIVE = 16 * 60;
-  const MIN_INTERVAL = 2;
+  const totalLogs = logs.length;
+  const groupedByHour = {};
+  const groupSet = new Set();
+  const gameSet = new Set();
 
-  function getExpectedMinDuration(logCount) {
-    return logCount * MIN_INTERVAL;
-  }
+  const timestamps = logs.map(log => new Date(log.matchedAt).getTime()).sort((a, b) => a - b);
+  const startTime = timestamps[0];
+  const endTime = timestamps[timestamps.length - 1];
+  const spanHours = (endTime - startTime) / (1000 * 60 * 60);
 
-  function scoreTimeSpanScore(logs) {
-    if (logs.length < 100) return 0.5; // 数据量不足，可信度低
+  // 1. 统计群组和游戏种类数
+  logs.forEach(log => {
+    groupSet.add(log.groupName);
+    gameSet.add(log.gameType);
 
-    const sorted = [...logs].sort((a, b) => new Date(a.matchedAt) - new Date(b.matchedAt));
-    const actualMinutes = (new Date(sorted[sorted.length - 1].matchedAt) - new Date(sorted[0].matchedAt)) / 60000;
-    const expectedMinutes = getExpectedMinDuration(logs.length);
+    const hour = new Date(log.matchedAt).getHours();
+    groupedByHour[hour] = groupedByHour[hour] || [];
+    groupedByHour[hour].push(log);
+  });
 
-    if (actualMinutes >= expectedMinutes) return 1.0;
-    if (actualMinutes >= expectedMinutes * 0.7) return 0.7;
-    if (actualMinutes >= expectedMinutes * 0.5) return 0.4;
-    return 0.2;
-  }
+  const groupCount = groupSet.size;
+  const gameCount = gameSet.size;
 
-  function scoreGroupDiversity(logs) {
-    const groupSet = new Set(logs.map(log => log.groupId));
-    const count = groupSet.size;
-    if (count >= 3) return 1.0;
-    if (count === 2) return 0.6;
-    return 0.3;
-  }
+  // 2. 按小时分桶计算相邻间隔时间
+  let shortIntervals = 0;
+  let mediumIntervals = 0;
+  let longIntervals = 0;
+  let totalPairs = 0;
 
-  function scoreFrequency(logs) {
-    const hourlyBuckets = {};
-    logs.forEach(log => {
-      const h = new Date(log.matchedAt).toISOString().slice(0, 13); // YYYY-MM-DDTHH
-      if (!hourlyBuckets[h]) hourlyBuckets[h] = [];
-      hourlyBuckets[h].push(new Date(log.matchedAt).getTime());
-    });
-
-    let shortCount = 0, mediumCount = 0, longCount = 0, total = 0;
-    for (const times of Object.values(hourlyBuckets)) {
-      const sorted = times.sort((a, b) => a - b);
-      for (let i = 1; i < sorted.length; i++) {
-        const diff = (sorted[i] - sorted[i - 1]) / 60000;
-        total++;
-        if (diff <= 2) shortCount++;
-        else if (diff <= 5) mediumCount++;
-        else longCount++;
-      }
+  for (const hourLogs of Object.values(groupedByHour)) {
+    const sorted = hourLogs.map(l => new Date(l.matchedAt).getTime()).sort((a, b) => a - b);
+    for (let i = 1; i < sorted.length; i++) {
+      const diffMin = (sorted[i] - sorted[i - 1]) / 1000 / 60;
+      totalPairs++;
+      if (diffMin <= 2) shortIntervals++;
+      else if (diffMin <= 5) mediumIntervals++;
+      else longIntervals++;
     }
-
-    if (total === 0) return 0.5;
-    const shortRatio = shortCount / total;
-    const mediumRatio = mediumCount / total;
-
-    if (shortRatio > 0.5) return 0.2;
-    if (mediumRatio > 0.5) return 0.5;
-    return 1.0;
   }
 
-  const score1 = scoreTimeSpanScore(logs);
-  const score2 = scoreGroupDiversity(logs);
-  const score3 = scoreFrequency(logs);
+  const shortRate = shortIntervals / totalPairs;
+  const mediumRate = mediumIntervals / totalPairs;
+  const longRate = longIntervals / totalPairs;
+  
+  // 3. 日志量太少时，趋向中性
+  let baseScore = 50;
+  if (totalLogs < 500) baseScore = 50;
 
-  const averageScore = (score1 + score2 + score3) / 3;
-  const tuoProbability = Math.round((1 - averageScore) * 1000) / 10; // 保留1位小数
-  return tuoProbability; // 例如：33.2 表示托的概率为33.2%
+  // 4. 时间跨度影响（动态判断）
+  const idealActiveHoursPerDay = 10; // 高活跃容错
+  const idealLogRate = 60 / 2; // 每小时最多触发数（2分钟一次）
+  const expectedHours = totalLogs / idealLogRate;
+  const expectedDays = expectedHours / idealActiveHoursPerDay;
+  const actualDays = spanHours / 24;
+
+  if (actualDays < expectedDays * 0.6) baseScore += 15;
+  else if (actualDays > expectedDays * 1.2) baseScore -= 10;
+
+  // 5. 群组权重
+  if (groupCount >= 3) baseScore -= 15;
+  else if (groupCount <= 1) baseScore += 10;
+
+  // 6. 操作频率
+  if (shortRate > 0.5) baseScore += 15;
+  else if (mediumRate > 0.5) baseScore += 5;
+  else baseScore -= 10;
+
+  // 范围限制
+  baseScore = Math.min(100, Math.max(0, baseScore));
+  return baseScore;
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
