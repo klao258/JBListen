@@ -44,7 +44,7 @@
                     <td class="px-4 py-2 text-blue-600">
                         <% if (user?.username) { %>
                           <a href="https://t.me/<%= user.username %>" target="_blank" class="hover:underline">
-                            <%= log.username.indexOf('@') === -1 ? '@' + user.username : user.username %>
+                            <%= user.username.indexOf('@') === -1 ? '@' + user.username : user.username %>
                           </a>
                         <% } else { %>
                           -
