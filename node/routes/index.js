@@ -2,6 +2,7 @@ const Router = require('koa-router');
 const GroupConfig = require('../models/GroupConfig');
 const GameType = require('../models/GameType');
 const userLogs = require('./userLogs');
+const userRoutes = require('./routes/user');
 const pushRouter = require('./push');
 
 const router = new Router();
@@ -13,7 +14,9 @@ router.get('/', async ctx => {
 });
 
 router.use('/group-configs', require('./groupConfigs').routes());
+router.use(userRoutes.routes());
 router.use(userLogs.routes());
 router.use(pushRouter.routes());
+
 
 module.exports = router;

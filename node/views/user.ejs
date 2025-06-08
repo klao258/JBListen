@@ -1,0 +1,69 @@
+<link rel="stylesheet" href="/css/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="lk-container">
+    <%- include('header', { currentPath: request.path }) %>
+    <div class="main user">
+        <!-- 查询表单 -->
+        <form id="filterForm" method="get" action="/user-profiles" class="flex flex-wrap items-center gap-4 mb-6 text-sm">
+            <div class="flex items-center gap-1">
+            <label for="userId" class="text-gray-700">User ID:</label>
+            <input type="text" id="userId" name="userId" value="<%= query.userId || '' %>" class="border rounded px-2 py-1 w-36">
+            </div>
+
+            <div class="flex items-center gap-1">
+            <label for="username" class="text-gray-700">Username:</label>
+            <input type="text" id="username" name="username" value="<%= query.username || '' %>" class="border rounded px-2 py-1 w-36">
+            </div>
+
+            <div class="flex items-center gap-1">
+            <label for="nickname" class="text-gray-700">Nickname:</label>
+            <input type="text" id="nickname" name="nickname" value="<%= query.nickname || '' %>" class="border rounded px-2 py-1 w-36">
+            </div>
+
+            <button type="submit" class="px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600">Search</button>
+        </form>
+
+        <!-- 用户表格 -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left text-gray-700 border border-gray-200 rounded">
+            <thead class="bg-gray-100 text-gray-800">
+                <tr>
+                <th class="px-3 py-2 border-b">#</th>
+                <th class="px-3 py-2 border-b">User ID</th>
+                <th class="px-3 py-2 border-b">Nickname</th>
+                <th class="px-3 py-2 border-b">Username</th>
+                <th class="px-3 py-2 border-b text-center">Is Tuo</th>
+                <th class="px-3 py-2 border-b text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% users.forEach((user, index) => { %>
+                <tr>
+                    <td class="px-3 py-2"><%= index + 1 + (currentPage - 1) * pageSize %></td>
+                    <td class="px-3 py-2"><%= user.userId %></td>
+                    <td class="px-3 py-2"><%= user.nickname || '-' %></td>
+                    <td class="px-3 py-2"><%= user.username || '-' %></td>
+                    <td class="px-3 py-2 text-center">
+                    <%= user.isTuo ? '✅' : '❌' %>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                    <form method="post" action="/user-profiles/toggle-tuo" onsubmit="return confirm('Confirm toggle isTuo for this user?')">
+                        <input type="hidden" name="userId" value="<%= user.userId %>">
+                        <button type="submit" class="text-blue-600 hover:underline">
+                        <%= user.isTuo ? '取消托' : '设为托' %>
+                        </button>
+                    </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="mt-4">
+            <%- include('pagination') %>
+        </div>
+    </div>
+</div>

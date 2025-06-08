@@ -1,0 +1,97 @@
+<% const totalPages = Math.ceil(total / pageSize); %>
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-2 sm:flex-nowrap">
+
+  <!-- 左侧：总记录 -->
+  <div class="text-sm text-gray-600 whitespace-nowrap">
+    共 <%= total %> 条记录
+  </div>
+
+  <!-- 右侧：分页控制 -->
+  <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+
+    <!-- 每页选择器 -->
+    <form method="get" action="" class="flex items-center gap-1">
+      <% for (const key in query) {
+        if (key !== 'page' && key !== 'pageSize') { %>
+        <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+      <% } } %>
+      <label class="text-sm text-gray-600">每页</label>
+      <select name="pageSize" onchange="this.form.submit()" class="border rounded px-2 py-1 text-sm">
+        <% [20, 50, 100, 200].forEach(size => { %>
+          <option value="<%= size %>" <%= size == pageSize ? 'selected' : '' %>><%= size %></option>
+        <% }) %>
+      </select>
+      <input type="hidden" name="page" value="1">
+    </form>
+
+    <!-- 首页 -->
+    <% if (currentPage > 1) { %>
+      <a href="?<%= new URLSearchParams({ ...query, page: 1, pageSize }).toString() %>"
+         class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">首页</a>
+    <% } else { %>
+      <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">首页</span>
+    <% } %>
+
+    <!-- 上一页 -->
+    <% if (currentPage > 1) { %>
+      <a href="?<%= new URLSearchParams({ ...query, page: currentPage - 1, pageSize }).toString() %>"
+         class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">上一页</a>
+    <% } else { %>
+      <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">上一页</span>
+    <% } %>
+
+    <!-- 页码按钮 -->
+    <% function getPageList(currentPage, totalPages) {
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+      return pages;
+    } %>
+    <% const pages = getPageList(currentPage, totalPages); %>
+    <% pages.forEach(p => { %>
+      <% if (p === '...') { %>
+        <span class="px-2 text-gray-500">...</span>
+      <% } else { %>
+        <a href="?<%= new URLSearchParams({ ...query, page: p, pageSize }).toString() %>"
+           class="px-3 py-1 rounded border text-sm <%= currentPage === p ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100' %>">
+          <%= p %>
+        </a>
+      <% } %>
+    <% }) %>
+
+    <!-- 下一页 -->
+    <% if (currentPage < totalPages) { %>
+      <a href="?<%= new URLSearchParams({ ...query, page: currentPage + 1, pageSize }).toString() %>"
+         class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">下一页</a>
+    <% } else { %>
+      <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">下一页</span>
+    <% } %>
+
+    <!-- 末页 -->
+    <% if (currentPage < totalPages) { %>
+      <a href="?<%= new URLSearchParams({ ...query, page: totalPages, pageSize }).toString() %>"
+         class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">末页</a>
+    <% } else { %>
+      <span class="px-3 py-1 rounded border bg-gray-200 text-gray-400 text-sm cursor-not-allowed">末页</span>
+    <% } %>
+
+    <!-- 跳页表单 -->
+    <form method="get" action="" class="flex items-center gap-1">
+      <% for (const key in query) {
+        if (key !== 'page') { %>
+        <input type="hidden" name="<%= key %>" value="<%= query[key] %>">
+      <% } } %>
+      <label class="text-sm text-gray-600">跳转</label>
+      <input type="number" name="page" min="1" max="<%= totalPages %>" class="w-16 px-2 py-1 border rounded text-sm">
+      <button type="submit" class="px-3 py-1 rounded border bg-white hover:bg-gray-100 text-sm">Go</button>
+      <input type="hidden" name="pageSize" value="<%= pageSize %>">
+    </form>
+  </div>
+</div>
