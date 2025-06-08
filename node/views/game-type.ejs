@@ -1,0 +1,96 @@
+<link rel="stylesheet" href="/css/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="lk-container">
+    <%- include('header', { currentPath: request.path }) %>
+    <div class="main flex flex-col game">
+        <div class="flex justify-between items-center mb-4">
+            <button onclick="openGameModal('add')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">新增游戏</button>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left text-gray-700 border border-gray-200 rounded">
+                <thead class="bg-gray-100 text-gray-800">
+                    <tr>
+                        <th class="px-3 py-2 border-b">id</th>
+                        <th class="px-3 py-2 border-b">名称</th>
+                        <th class="px-3 py-2 border-b">描述</th>
+                        <th class="px-3 py-2 border-b">推送ID</th>
+                        <th class="px-3 py-2 border-b text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <% games.forEach(game => { %>
+                        <tr>
+                            <td class="px-3 py-2"><%= game.name %></td>
+                            <td class="px-3 py-2"><%= game.label %></td>
+                            <td class="px-4 py-2"><%= game.description || '-' %></td>
+                            <td class="px-3 py-2 break-all"><%= (game.push || []).join(', ') || '-' %></td>
+                            <td class="px-3 py-2 text-center">
+                                <button onclick='openGameModal("edit", <%- JSON.stringify(game) %>)'  class="text-blue-600 hover:underline">编辑</button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 游戏编辑弹窗 -->
+<div id="gameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white w-full max-w-md rounded shadow-lg p-6">
+        <h3 id="gameModalTitle" class="text-lg font-semibold mb-4">新增游戏</h3>
+        <form id="gameForm" method="post" action="/game-types/save" class="space-y-4">
+            <input type="hidden" name="mode" id="formMode">
+            <input type="hidden" name="name" id="inputName">
+    
+            <div>
+                <label class="block text-sm text-gray-700">名称 (name)</label>
+                <input type="text" id="displayName" class="border rounded w-full px-3 py-1 text-sm" disabled>
+            </div>
+    
+            <div>
+                <label class="block text-sm text-gray-700">标签 (label)</label>
+                <input type="text" name="label" id="inputLabel" class="border rounded w-full px-3 py-1 text-sm">
+            </div>
+    
+            <div>
+                <label class="block text-sm text-gray-700">描述 (description)</label>
+                <textarea name="description" id="inputDescription" class="border rounded w-full px-3 py-1 text-sm"></textarea>
+            </div>
+    
+            <div>
+                <label class="block text-sm text-gray-700">推送 ID（英文逗号分隔）</label>
+                <input type="text" name="push" id="inputPush" class="border rounded w-full px-3 py-1 text-sm">
+            </div>
+    
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeGameModal()" class="px-4 py-1 text-gray-700 border rounded">取消</button>
+                <button type="submit" class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openGameModal(mode, game = {}) {
+        document.getElementById('gameModal').classList.remove('hidden');
+        document.getElementById('formMode').value = mode;
+        document.getElementById('gameModalTitle').textContent = mode === 'edit' ? '编辑游戏' : '新增游戏';
+        
+        document.getElementById('inputName').value = game.name || '';
+        document.getElementById('displayName').value = game.name || '';
+        document.getElementById('inputLabel').value = game.label || '';
+        document.getElementById('inputDescription').value = game.description || '';
+        document.getElementById('inputPush').value = (game.push || []).join(', ');
+        
+        // 控制可编辑字段
+        document.getElementById('inputLabel').disabled = mode === 'edit';
+    }
+    
+    function closeGameModal() {
+        document.getElementById('gameModal').classList.add('hidden');
+        document.getElementById('gameForm').reset();
+    }
+</script>
