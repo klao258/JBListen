@@ -48,7 +48,8 @@ router.get('/user-logs', async ctx => {
       currentPage,
       gameTypes,
       groups,
-      query: ctx.query
+      query: ctx.query,
+      request: { path: '/user-logs' }, // 加入当前路径用于导航高亮
     });
 });
 
