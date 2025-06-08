@@ -21,7 +21,7 @@ router.get('/user-profiles', async ctx => {
     .skip((currentPage - 1) * size)
     .limit(size);
 
-  await ctx.render('user', {
+  await ctx.render('user-profiles', {
     users,
     query: ctx.query,
     total,
