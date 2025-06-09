@@ -22,7 +22,7 @@ router.post('/api/push', async ctx => {
     ctx.body = { success: true, message: '推送处理成功' };
   } catch (error) {
     console.error('node处理失败', error);
-    res.sendStatus(500);
+    ctx.sendStatus(500);
   }
 });
 

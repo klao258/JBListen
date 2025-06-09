@@ -54,6 +54,15 @@ const calculateUserScore = (logs) => {
 
 
   // 3. 分桶频率分析（每小时一个桶）
+  const buckets = {};
+  logs.forEach(log => {
+    const date = new Date(log.matchedAt);
+    const hourKey = date.toISOString().slice(0, 13); // 按小时分桶: "2025-06-08T13"
+    if (!buckets[hourKey]) buckets[hourKey] = [];
+    buckets[hourKey].push(date);
+  });
+
+
   let frequentBuckets = 0;
   let totalBuckets = 0;
 
