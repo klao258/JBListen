@@ -18,12 +18,14 @@ const calculateUserScore = (logs) => {
 
   // 1. 群组数评分
   let groupScore = 0;
-  if (groupCount >= 4) {
-    return 0; // 多群用户，直接视为正常
+  if (groupCount === 1) {
+    groupScore = 0; 
+  } else if (groupCount === 2) {
+    groupScore = -15;
   } else if (groupCount === 3) {
     groupScore = -30;
   } else {
-    groupScore = 0;
+    return 0
   }
 
   // 2. 时间跨度评分（按5分钟频率 & 每日活跃10小时预估）
@@ -33,18 +35,28 @@ const calculateUserScore = (logs) => {
   const durationHours = (end - start) / 1000 / 60 / 60;
 
   const expectedMaxLogs = (durationHours / 5); // 每5分钟一条
-  const timeScore = totalLogs > expectedMaxLogs * 1.2 ? 30 : 0;
+  const diffRatio = logs.length / expectedMaxLogs;
+  let timeScore = 0;
+
+  if (diffRatio > 1.5) {
+    timeScore = +25;
+  } else if (diffRatio > 1.3) {
+    timeScore = +18;
+  } else if (diffRatio > 1.2) {
+    timeScore = +10;
+  } else if (diffRatio > 1.0) {
+    timeScore = -8;
+  } else if (diffRatio > 0.8) {
+    timeScore = -16;
+  } else {
+    timeScore = -25;
+  }
+
 
   // 3. 分桶频率分析（每小时一个桶）
-  const buckets = {};
-  logs.forEach(log => {
-    const hour = new Date(log.matchedAt).getHours();
-    if (!buckets[hour]) buckets[hour] = [];
-    buckets[hour].push(new Date(log.matchedAt));
-  });
-
   let frequentBuckets = 0;
   let totalBuckets = 0;
+
   for (const times of Object.values(buckets)) {
     if (times.length < 2) continue;
     totalBuckets++;
@@ -58,7 +70,24 @@ const calculateUserScore = (logs) => {
     }
   }
 
-  const freqScore = totalBuckets > 0 && (frequentBuckets / totalBuckets) > 0.5 ? 30 : 0;
+  let freqScore = 0;
+  if (totalBuckets > 0) {
+    const frequentRatio = frequentBuckets / totalBuckets;
+
+    if (frequentRatio > 0.75) {
+      freqScore = +25;
+    } else if (frequentRatio > 0.5) {
+      freqScore = +15;
+    } else if (frequentRatio > 0.3) {
+      freqScore = +8;
+    } else if (frequentRatio > 0.15) {
+      freqScore = -8;
+    } else if (frequentRatio > 0) {
+      freqScore = -15;
+    } else {
+      freqScore = -25;
+    }
+  }
 
   // 最终评分（越高越像托）
   let score = 50 + groupScore + timeScore + freqScore;
