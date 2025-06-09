@@ -8,7 +8,7 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  if (!logs || logs.length < 50) return { score: 50, reason: ['日志不足50条，保持中性'] };
+  if (!logs || logs.length < 20) return 50;
 
   const groupIds = new Set(logs.map(l => l.groupId));
   const groupCount = groupIds.size;
