@@ -8,92 +8,62 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  if (!logs || logs.length === 0) return 50.0;
+  if (!logs || logs.length === 0) return 50;
 
   const totalLogs = logs.length;
-  if (totalLogs < 500) return 50.0;
+  if (totalLogs < 50) return 50;
 
-  const groupedByHour = {};
-  const groupSet = new Set();
-  const timestamps = [];
-
-  for (const log of logs) {
-    const ts = new Date(log.matchedAt).getTime();
-    timestamps.push(ts);
-    const hourKey = new Date(ts).getHours();
-    if (!groupedByHour[hourKey]) groupedByHour[hourKey] = [];
-    groupedByHour[hourKey].push(ts);
-
-    if (log.groupId) groupSet.add(log.groupId);
-  }
-
-  timestamps.sort((a, b) => a - b);
-  const durationMs = timestamps[timestamps.length - 1] - timestamps[0];
-  const durationHours = durationMs / (1000 * 60 * 60);
-
+  const groupSet = new Set(logs.map(l => l.groupId));
   const groupCount = groupSet.size;
 
-  // ----- ⬇️ 日志活跃时间评分（基于理论最少活跃时间） -----
-  const realisticActiveHours = 12; // 假定人类每日最多活跃时间
-  const expectedHours = (totalLogs * 3) / 60; // 按3分钟/条推算理论需要小时数
-  const expectedSpan = Math.max(expectedHours / realisticActiveHours, 1); // 所需自然日跨度
-
-  const actualSpan = Math.max(durationHours / 24, 1); // 实际跨越自然日数
-
-  let activeScore = 50;
-  if (actualSpan < expectedSpan) {
-    activeScore -= 20 * ((expectedSpan - actualSpan) / expectedSpan); // 时间越短扣分越多
-  } else if (actualSpan > expectedSpan * 1.5) {
-    activeScore += 10 * ((actualSpan - expectedSpan) / expectedSpan); // 时间过长适度加分
+  // 1. 群组数评分
+  let groupScore = 0;
+  if (groupCount >= 4) {
+    return 0; // 多群用户，直接视为正常
+  } else if (groupCount === 3) {
+    groupScore = -30;
+  } else {
+    groupScore = 0;
   }
-  activeScore = Math.max(10, Math.min(90, activeScore));
 
-  // ----- ⬇️ 群组覆盖评分 -----
-  let groupScore = 50;
-  if (groupCount >= 3) groupScore += 15;
-  else if (groupCount === 2) groupScore += 5;
-  else if (groupCount === 1) groupScore -= 10;
+  // 2. 时间跨度评分（按5分钟频率 & 每日活跃10小时预估）
+  const sortedLogs = logs.slice().sort((a, b) => new Date(a.matchedAt) - new Date(b.matchedAt));
+  const start = new Date(sortedLogs[0].matchedAt);
+  const end = new Date(sortedLogs[sortedLogs.length - 1].matchedAt);
+  const durationHours = (end - start) / 1000 / 60 / 60;
 
-  // ----- ⬇️ 操作频率（分桶）分析 -----
-  let frequencyScore = 50;
+  const expectedMaxLogs = (durationHours / 5); // 每5分钟一条
+  const timeScore = totalLogs > expectedMaxLogs * 1.2 ? 30 : 0;
+
+  // 3. 分桶频率分析（每小时一个桶）
+  const buckets = {};
+  logs.forEach(log => {
+    const hour = new Date(log.matchedAt).getHours();
+    if (!buckets[hour]) buckets[hour] = [];
+    buckets[hour].push(new Date(log.matchedAt));
+  });
+
+  let frequentBuckets = 0;
   let totalBuckets = 0;
-  let ultraFastBuckets = 0;
-  let fastBuckets = 0;
-  let moderateBuckets = 0;
-
-  for (const hour in groupedByHour) {
-    const timestamps = groupedByHour[hour].sort((a, b) => a - b);
-    const gaps = [];
-    for (let i = 1; i < timestamps.length; i++) {
-      const gapMin = (timestamps[i] - timestamps[i - 1]) / 60000;
-      gaps.push(gapMin);
-    }
-    if (gaps.length === 0) continue;
-
-    const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-
+  for (const times of Object.values(buckets)) {
+    if (times.length < 2) continue;
     totalBuckets++;
-    if (avgGap <= 2) ultraFastBuckets++;
-    else if (avgGap <= 5) fastBuckets++;
-    else moderateBuckets++;
+
+    times.sort((a, b) => a - b);
+    const intervals = times.slice(1).map((t, i) => (t - times[i]) / 1000 / 60);
+    const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+
+    if (avgInterval <= 3) {
+      frequentBuckets++;
+    }
   }
 
-  if (totalBuckets > 0) {
-    const ultraRatio = ultraFastBuckets / totalBuckets;
-    const fastRatio = fastBuckets / totalBuckets;
+  const freqScore = totalBuckets > 0 && (frequentBuckets / totalBuckets) > 0.5 ? 30 : 0;
 
-    if (ultraRatio > 0.5) frequencyScore -= 25;
-    else if (ultraRatio + fastRatio > 0.5) frequencyScore -= 15;
-    else if (moderateBuckets / totalBuckets > 0.6) frequencyScore += 10;
-  }
-
-  // 权重计算
-  const finalScore =
-    0.4 * (100 - activeScore) +
-    0.3 * (100 - groupScore) +
-    0.3 * (100 - frequencyScore);
-
-  return Math.max(0, Math.min(100, parseFloat(finalScore.toFixed(1))));
+  // 最终评分（越高越像托）
+  let score = 50 + groupScore + timeScore + freqScore;
+  score = Math.max(0, Math.min(100, score));
+  return score;
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
