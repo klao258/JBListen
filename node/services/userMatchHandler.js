@@ -83,9 +83,9 @@ const calculateUserScore = (logs) => {
 
   return {
     score,
-    reason: `群数:${groupCount} → ${groupScore}\n
-      平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}\n
-      理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}\n
+    reason: `群数:${groupCount} → ${groupScore}
+      平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}
+      理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}
       高频桶:${frequentBuckets}/${totalBuckets} → ${freqScore}`
   };
 }
