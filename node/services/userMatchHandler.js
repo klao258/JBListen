@@ -25,7 +25,7 @@ const calculateUserScore = (logs) => {
   } else if (groupCount === 3) {
     groupScore = -30;
   } else {
-    return 0
+    return '真实玩家!!!'
   }
 
   // 2. 时间跨度评分（按5分钟频率 & 每日活跃10小时预估）
