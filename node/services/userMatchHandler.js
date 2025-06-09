@@ -11,7 +11,7 @@ const calculateUserScore = (logs) => {
   if (!logs || logs.length === 0) return 50;
 
   const totalLogs = logs.length;
-  if (totalLogs < 50) return 50;
+  if (totalLogs < 20) return 50;
 
   const groupSet = new Set(logs.map(l => l.groupId));
   const groupCount = groupSet.size;
@@ -92,7 +92,7 @@ const calculateUserScore = (logs) => {
   // 最终评分（越高越像托）
   let score = 50 + groupScore + timeScore + freqScore;
   score = Math.max(0, Math.min(100, score));
-  return `50 + ${groupScore} + ${timeScore} + ${freqScore} = ${score}`;
+  return `基础：50 + 群：${groupScore} + 跨度：${timeScore} + 行为：${freqScore} = ${score}`;
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
