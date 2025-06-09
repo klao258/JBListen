@@ -8,7 +8,7 @@ const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
 const calculateUserScore = (logs) => {
-  if (!logs || logs.length < 20) return 50;
+  if (!logs || logs.length < 50) return { score: 50, reason: '日志不足50条，保持中性' };
 
   const groupIds = new Set(logs.map(l => l.groupId));
   const groupCount = groupIds.size;
@@ -17,7 +17,8 @@ const calculateUserScore = (logs) => {
   let groupScore = 0;
   if (groupCount >= 4) groupScore = -25;
   else if (groupCount === 3) groupScore = -10;
-  else if (groupCount <= 2) groupScore = +15;
+  else if (groupCount === 2) groupScore = -5;
+  else if (groupCount <= 1) groupScore = +10;
 
   // 2. 平均操作间隔评分
   const timestamps = logs.map(l => new Date(l.matchedAt).getTime()).sort((a, b) => a - b);
@@ -80,14 +81,13 @@ const calculateUserScore = (logs) => {
 
   const score = Math.max(0, Math.min(100, 50 + groupScore + intervalScore + timeScore + freqScore));
 
-  // reason: [
-  //   `群数:${groupCount} → ${groupScore}`,
-  //   `平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}`,
-  //   `理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}`,
-  //   `高频桶:${frequentBuckets}/${totalBuckets} → ${freqScore}`
-  // ]
-
-  return `群${groupScore}-间隔${intervalScore}-跨度${timeScore}-频率${freqScore} = ${score}`;
+  return {
+    score,
+    reason: `群数:${groupCount} → ${groupScore}\n
+      平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}\n
+      理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}\n
+      高频桶:${frequentBuckets}/${totalBuckets} → ${freqScore}`
+  };
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
