@@ -92,7 +92,7 @@ const calculateUserScore = (logs) => {
   // 最终评分（越高越像托）
   let score = 50 + groupScore + timeScore + freqScore;
   score = Math.max(0, Math.min(100, score));
-  return score;
+  return `50 + ${groupScore} + ${timeScore} + ${freqScore} = ${score}`;
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
