@@ -8,7 +8,7 @@ const moment = require('moment');
 const whiteKeys = ['游戏', '余额', '流水', '返水', '反水']
 
 // 用户评分函数
-const calculateUserScore = (logs) => {
+const calculateUserScore = (logs, userId) => {
   if (!logs || logs.length < 20) return { score: 50, reason: '日志不足20条，保持中性' };
 
   const groupIds = new Set(logs.map(l => l.groupId));
@@ -80,10 +80,6 @@ const calculateUserScore = (logs) => {
   const avgPercent = (totalActive / totalDays) * 100;
   const avgActiveRo = Number(avgPercent.toFixed(2));
 
-  console.log('📊 每日 slot 分布:', Object.fromEntries(
-      Object.entries(daySlotMap).map(([k, v]) => [k, Array.from(v).sort()])
-  ));
-
   if (totalDays > 1) {
     const capped = Math.min(100, Math.max(0, avgActiveRo));
   
@@ -131,6 +127,10 @@ const calculateUserScore = (logs) => {
 
   const score = Math.max(0, Math.min(100, 50 + groupScore + intervalScore + timeScore + freqScore));
 
+  console.log(`📊 ${userId}每日 slot 分布: ${avgActiveRo}`, Object.fromEntries(
+    Object.entries(daySlotMap).map(([k, v]) => [k, Array.from(v).sort()])
+  ));
+
   return {
     score,
     reason: `跨群：${ groupCount } 个（${groupScore}）
@@ -162,7 +162,7 @@ const insertUserLog = async (logData) => {
   }
 
   const logs = await GameMatchLog.find({ userId }).sort({ matchedAt: -1 }).limit(1000);
-  const pr = calculateUserScore(logs)
+  const pr = calculateUserScore(logs, userId)
   return pr
 }
 
