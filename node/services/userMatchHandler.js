@@ -37,23 +37,32 @@ const calculateUserScore = (logs) => {
 
   // 3. 日活跃度
   let timeScore = 0
-  const daySlotMap = {};  // { '2025-06-09': Set('08:00', '08:30', ...) }
+  const daySlotSet = {}; // 结构: { '2025-06-10': Set('08:00', '08:30', ...) }
+  let minDate = null;
+  let maxDate = null;
   for (const log of logs) {
-    const date = moment(log.createdAt);
-    const dayKey = date.format('YYYY-MM-DD');
-    const slot = `${date.format('HH')}:${date.minutes() < 30 ? '00' : '30'}`;
-    if (!daySlotMap[dayKey]) {
-      daySlotMap[dayKey] = new Set();
+    const m = moment(log.createdAt);
+    const dayKey = m.format('YYYY-MM-DD');
+    const slotKey = `${m.format('HH')}:${m.minutes() < 30 ? '00' : '30'}`;
+    if (!daySlotSet[dayKey]) {
+      daySlotSet[dayKey] = new Set();
     }
-    daySlotMap[dayKey].add(slot);
+    daySlotSet[dayKey].add(slotKey);
+    if (!minDate || m.isBefore(minDate)) minDate = m.clone();
+    if (!maxDate || m.isAfter(maxDate)) maxDate = m.clone();
   }
-  const dayKeys = Object.keys(daySlotMap);
-  console.log(daySlotMap);
-  
-  const dailyActives = dayKeys.map(day => daySlotMap[day].size / 48);
-  const avgActive = dailyActives.reduce((sum, val) => sum + val, 0) / dailyActives.length;
-  const dayRang = dailyActives.length // 跨天
-  const avgActiveRo = Number((avgActive * 100).toFixed(2)); // 活跃度百分比
+
+  // 计算每天的活跃度
+  const dailyActives = Object.values(daySlotSet).map(set => set.size / 48);
+
+  // 计算跨越天数（包含首尾），最少为1
+  const totalDays = Math.max(1, maxDate.startOf('day').diff(minDate.startOf('day'), 'days') + 1);
+
+  // 平均活跃度百分比
+  const totalActive = dailyActives.reduce((sum, val) => sum + val, 0);
+  const avgPercent = (totalActive / totalDays) * 100;
+  const avgActiveRo = Number(avgPercent.toFixed(2));
+
   if(dayRang > 1){
     if(avgActiveRo > 80) timeScore = +25
     else if (avgActiveRo > 70) timeScore = +15
