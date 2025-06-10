@@ -80,6 +80,10 @@ const calculateUserScore = (logs) => {
   const avgPercent = (totalActive / totalDays) * 100;
   const avgActiveRo = Number(avgPercent.toFixed(2));
 
+  console.log('📊 每日 slot 分布:', Object.fromEntries(
+      Object.entries(daySlotMap).map(([k, v]) => [k, Array.from(v).sort()])
+  ));
+
   if (totalDays > 1) {
     const capped = Math.min(100, Math.max(0, avgActiveRo));
   
@@ -130,9 +134,9 @@ const calculateUserScore = (logs) => {
   return {
     score,
     reason: `跨群：${ groupCount } 个（${groupScore}）
-            触发间隔均值：${ avgInterval.toFixed(1) }min（${intervalScore}）
-            活跃度均值：跨${totalDays}天，总数：${totalActive}， 均值：${(totalActive/totalActive).toFixed(0)}，${ avgActiveRo }%（${timeScore}）
-            高频桶占比：${ frequentBuckets }/${ totalBuckets }（${freqScore}）`
+            触发间隔均值：${ avgInterval.toFixed(1) }min（${ intervalScore }）
+            活跃度均值：跨${totalDays}天, 均值${ avgActiveRo }%（ ${ timeScore }）
+            高频桶占比：${ frequentBuckets }/${ totalBuckets }（ ${ freqScore }）`
   };
 }
 
