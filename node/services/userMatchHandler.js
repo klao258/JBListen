@@ -80,16 +80,17 @@ const calculateUserScore = (logs) => {
   const avgPercent = (totalActive / totalDays) * 100;
   const avgActiveRo = Number(avgPercent.toFixed(2));
 
-  if(totalDays > 1){
-    if(avgActiveRo > 80) timeScore = +25
-    else if (avgActiveRo > 70) timeScore = +15
-    else if (avgActiveRo > 60) timeScore = +5
-    else if (avgActiveRo > 50) timeScore = +0
-    else if (avgActiveRo > 40) timeScore = -5
-    else if (avgActiveRo > 30) timeScore = -10
-    else timeScore = -25
+  if (totalDays > 1) {
+    const capped = Math.min(100, Math.max(0, avgActiveRo));
+  
+    // 中心点设为 30%，靠近 30% 最安全，偏离就加分（越偏离越可疑）
+    const diff = Math.abs(capped - 30); // 与“正常”活跃度的偏离程度
+    timeScore = Math.round(diff * 1.2); // 每偏离 1%，加 1.2 分
+  
+    // 限制最高得分
+    if (timeScore > 50) timeScore = 50;
   } else {
-    timeScore = +10
+    timeScore = 15; // 数据不足，轻微打分但不判定为刷
   }
 
   // 4. 分桶频率分析（每小时）
