@@ -41,10 +41,13 @@ const calculateUserScore = (logs) => {
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
-    const date = new Date(log.createdAt);
-    
-    // 强制转换为东八区时间（+8 小时）
-    const local = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+    if (!log.createdAt) continue;
+
+    const utc = new Date(log.createdAt);
+    if (isNaN(utc.getTime())) continue;
+
+    // ✅ 将 UTC 时间转换为东八区时间（北京时间）
+    const local = new Date(utc.getTime() + 8 * 60 * 60 * 1000);
 
     const yyyy = local.getFullYear();
     const mm = String(local.getMonth() + 1).padStart(2, '0');
@@ -56,18 +59,14 @@ const calculateUserScore = (logs) => {
     const dayKey = `${yyyy}-${mm}-${dd}`;
     const slotKey = `${hh}:${slotMinute}`;
 
-    if (!daySlotMap[dayKey]) {
-      daySlotMap[dayKey] = new Set();
-    }
-    daySlotMap[dayKey].add(slotKey);
+    // 用于统计跨越的天数
+    const dayTime = new Date(Date.UTC(yyyy, Number(mm) - 1, Number(dd)));
 
-    const dayTime = new Date(`${dayKey}T00:00:00+08:00`);
+    if (!daySlotMap[dayKey]) daySlotMap[dayKey] = new Set();
+    daySlotMap[dayKey].add(slotKey);
 
     if (!minDate || dayTime < minDate) minDate = dayTime;
     if (!maxDate || dayTime > maxDate) maxDate = dayTime;
-
-    // ✅ 输出调试日志
-    // console.log(`📌 ${log.createdAt} → 本地 ${hh}:${minute} → slot: ${slotKey}`);
   }
 
   console.log('123', daySlotMap)
