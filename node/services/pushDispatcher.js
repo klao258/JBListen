@@ -33,17 +33,17 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
     
     const content = `
     🎯 关键词命中通知
-      用户ID：<code>${user.id}</code>
-      昵称：<b>${user.nickname || '未知'}</b>
-      用户名：${user.username ? '@' + user.username : '无'}
-      托概率：${pr.score}%
-      分析：${pr.reason}
-      触发群组：<b>${groupName}</b>
-      游戏类型：<b>${gameLabel}</b>
-      消息内容：${originalMessage}
+    用户ID：<code>${user.id}</code>
+    昵称：<b>${user.nickname || '未知'}</b>
+    用户名：${user.username ? '@' + user.username : '无'}
+    托概率：${pr.score}%
+    分析：${pr.reason}
+    触发群组：<b>${groupName}</b>
+    游戏类型：<b>${gameLabel}</b>
+    消息内容：${originalMessage}
 
 📊 游戏记录（${profile?.groups?.length || 0}个群）：
-    ${gameHistoryText}
+${gameHistoryText}
     
 🔗 投注记录：${recordLink}`;
 

@@ -48,6 +48,8 @@ const calculateUserScore = (logs) => {
     daySlotMap[dayKey].add(slot);
   }
   const dayKeys = Object.keys(daySlotMap);
+  console.log(dayKeys);
+  
   const dailyActives = dayKeys.map(day => daySlotMap[day].size / 48);
   const avgActive = dailyActives.reduce((sum, val) => sum + val, 0) / dailyActives.length;
   const dayRang = dailyActives.length // 跨天
