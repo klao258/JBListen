@@ -70,25 +70,25 @@ const calculateUserScore = (logs, userId) => {
   }
 
   // 计算每天的活跃度
-  const dailyActives = Object.values(daySlotMap).map(set => set.size / 48);
+  const dailyActives = Object.values(daySlotMap).map(set => set.size);
 
   // 计算跨越天数（包含首尾），最少为1
   const totalDays = Math.max(1, Math.floor((maxDate - minDate) / (24 * 60 * 60 * 1000)) + 1);
 
   // 平均活跃度百分比
   const totalActive = dailyActives.reduce((sum, val) => sum + val, 0);
-  const avgPercent = (totalActive / totalDays) * 100;
-  const avgActiveRo = Number(avgPercent.toFixed(2));
+  const avgPercent = (totalActive / totalDays).toFixed(0);
+  const avgActiveRo = Number((avgPercent / 48).toFixed(2));
 
   if (totalDays > 1) {
     const capped = Math.min(100, Math.max(0, avgActiveRo));
   
     // 中心点设为 30%，靠近 30% 最安全，偏离就加分（越偏离越可疑）
-    const diff = Math.abs(capped - 30); // 与“正常”活跃度的偏离程度
+    const diff = capped - 30; // 与“正常”活跃度的偏离程度
     timeScore = Math.round(diff * 1.2); // 每偏离 1%，加 1.2 分
   
     // 限制最高得分
-    if (timeScore > 50) timeScore = 50;
+    if (timeScore > 30) timeScore = 30;
   } else {
     timeScore = 15; // 数据不足，轻微打分但不判定为刷
   }
@@ -135,7 +135,7 @@ const calculateUserScore = (logs, userId) => {
     score,
     reason: `跨群：${ groupCount } 个（${groupScore}）
             触发间隔均值：${ avgInterval.toFixed(1) }min（${ intervalScore }）
-            活跃度均值：跨${totalDays}天, 均值${ avgActiveRo }%（ ${ timeScore }）
+            活跃度均值：跨${totalDays}天, 均值${avgPercent}，占比：${ avgActiveRo }%（ ${ timeScore }）
             高频桶占比：${ frequentBuckets }/${ totalBuckets }（ ${ freqScore }）`
   };
 }
