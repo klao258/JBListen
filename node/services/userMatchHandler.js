@@ -49,17 +49,19 @@ const calculateUserScore = (logs) => {
 
     const dayKey = slotStart.format('YYYY-MM-DD');
     const slotKey = slotStart.format('HH:mm');
-
+    
     if (!daySlotMap[dayKey]) {
       daySlotMap[dayKey] = new Set();
     }
     daySlotMap[dayKey].add(slotKey);
 
+    console.log('123', slotKey)
+
     if (!minDate || slotStart.isBefore(minDate)) minDate = slotStart.clone();
     if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
   }
 
-  console.log('活跃度统计', daySlotMap)
+  
 
   // 计算每天的活跃度
   const dailyActives = Object.values(daySlotMap).map(set => set.size / 48);
