@@ -57,12 +57,11 @@ const calculateUserScore = (logs) => {
     }
     daySlotMap[dayKey].add(slotKey);
 
-    console.log('123', log.matchedAt, slotStart)
-
     if (!minDate || slotStart.isBefore(minDate)) minDate = slotStart.clone();
     if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
   }
 
+  console.log('123', daySlotMap)
   
 
   // 计算每天的活跃度
