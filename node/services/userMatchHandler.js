@@ -41,17 +41,22 @@ const calculateUserScore = (logs) => {
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
-    // 强制按北京时间处理（+8 小时）
-    const m = moment(log.createdAt).utcOffset(8);  // +08:00 东八区
-    const dayKey = m.format('YYYY-MM-DD');
-    const slotKey = `${m.format('HH')}:${m.minutes() < 30 ? '00' : '30'}`;
+    const m = moment(log.createdAt).utcOffset(8); // 本地时间
 
-    if (!daySlotSet[dayKey]) {
-      daySlotSet[dayKey] = new Set();
+    // 向下取整到半小时的起点
+    const roundedMin = m.minutes() < 30 ? 0 : 30;
+    const slotStart = m.clone().minutes(roundedMin).seconds(0).milliseconds(0);
+
+    const dayKey = slotStart.format('YYYY-MM-DD');
+    const slotKey = slotStart.format('HH:mm');
+
+    if (!daySlotMap[dayKey]) {
+      daySlotMap[dayKey] = new Set();
     }
-    daySlotSet[dayKey].add(slotKey);
-    if (!minDate || m.isBefore(minDate)) minDate = m.clone();
-    if (!maxDate || m.isAfter(maxDate)) maxDate = m.clone();
+    daySlotMap[dayKey].add(slotKey);
+
+    if (!minDate || slotStart.isBefore(minDate)) minDate = slotStart.clone();
+    if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
   }
 
   console.log('活跃度统计', daySlotSet)
