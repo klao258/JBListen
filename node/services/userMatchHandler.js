@@ -52,6 +52,8 @@ const calculateUserScore = (logs) => {
     if (!maxDate || m.isAfter(maxDate)) maxDate = m.clone();
   }
 
+  console.log('活跃度统计', daySlotSet)
+
   // 计算每天的活跃度
   const dailyActives = Object.values(daySlotSet).map(set => set.size / 48);
 
@@ -112,9 +114,9 @@ const calculateUserScore = (logs) => {
   return {
     score,
     reason: `跨群：${ groupCount } 个
-              触发间隔均值：${ avgInterval.toFixed(1) }min
-              活跃度均值：跨${totalDays}天, 均值：${ avgActiveRo }%
-              高频桶占比：${ frequentBuckets }/${ totalBuckets }`
+        触发间隔均值：${ avgInterval.toFixed(1) }min
+        活跃度均值：跨${totalDays}天, 均值：${ avgActiveRo }%
+        高频桶占比：${ frequentBuckets }/${ totalBuckets }`
   };
 }
 
