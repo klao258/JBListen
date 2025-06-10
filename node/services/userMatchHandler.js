@@ -77,7 +77,7 @@ const calculateUserScore = (logs) => {
   const dailyActives = Object.values(daySlotMap).map(set => set.size / 48);
 
   // 计算跨越天数（包含首尾），最少为1
-  const totalDays = Math.max(1, maxDate.startOf('day').diff(minDate.startOf('day'), 'days') + 1);
+  const totalDays = Math.max(1, Math.floor((maxDate - minDate) / (24 * 60 * 60 * 1000)) + 1);
 
   // 平均活跃度百分比
   const totalActive = dailyActives.reduce((sum, val) => sum + val, 0);
