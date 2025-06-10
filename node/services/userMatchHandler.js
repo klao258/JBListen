@@ -41,9 +41,11 @@ const calculateUserScore = (logs) => {
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
-    const m = moment(log.createdAt);
+    // 强制按北京时间处理（+8 小时）
+    const m = moment(log.createdAt).utcOffset(8);  // +08:00 东八区
     const dayKey = m.format('YYYY-MM-DD');
     const slotKey = `${m.format('HH')}:${m.minutes() < 30 ? '00' : '30'}`;
+
     if (!daySlotSet[dayKey]) {
       daySlotSet[dayKey] = new Set();
     }
