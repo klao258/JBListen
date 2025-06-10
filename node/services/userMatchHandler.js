@@ -41,24 +41,33 @@ const calculateUserScore = (logs) => {
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
-    const m = moment(log.createdAt).utcOffset(8); // 原始时间保持不动
-    const slotStart = moment(log.createdAt).utcOffset(8); // 单独归类对象
-
-
-    // 向下取整到半小时的起点
-    const roundedMin = slotStart.minutes() < 30 ? 0 : 30;
-    slotStart.minutes(roundedMin).seconds(0).milliseconds(0);
-
-    const dayKey = slotStart.format('YYYY-MM-DD');
-    const slotKey = slotStart.format('HH:mm');
+    const date = new Date(log.createdAt);
     
+    // 强制转换为东八区时间（+8 小时）
+    const local = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+
+    const yyyy = local.getFullYear();
+    const mm = String(local.getMonth() + 1).padStart(2, '0');
+    const dd = String(local.getDate()).padStart(2, '0');
+    const hh = String(local.getHours()).padStart(2, '0');
+    const minute = local.getMinutes();
+    const slotMinute = minute < 30 ? '00' : '30';
+
+    const dayKey = `${yyyy}-${mm}-${dd}`;
+    const slotKey = `${hh}:${slotMinute}`;
+
     if (!daySlotMap[dayKey]) {
       daySlotMap[dayKey] = new Set();
     }
     daySlotMap[dayKey].add(slotKey);
 
-    if (!minDate || slotStart.isBefore(minDate)) minDate = slotStart.clone();
-    if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
+    const dayTime = new Date(`${dayKey}T00:00:00+08:00`);
+
+    if (!minDate || dayTime < minDate) minDate = dayTime;
+    if (!maxDate || dayTime > maxDate) maxDate = dayTime;
+
+    // ✅ 输出调试日志
+    // console.log(`📌 ${log.createdAt} → 本地 ${hh}:${minute} → slot: ${slotKey}`);
   }
 
   console.log('123', daySlotMap)
