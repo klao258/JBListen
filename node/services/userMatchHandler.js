@@ -131,7 +131,7 @@ const calculateUserScore = (logs) => {
     score,
     reason: `跨群：${ groupCount } 个（${groupScore}）
             触发间隔均值：${ avgInterval.toFixed(1) }min（${intervalScore}）
-            活跃度均值：跨${totalDays}天, 均值${ avgActiveRo }%（${timeScore}）
+            活跃度均值：跨${totalDays}天，总数：${totalActive}， 均值：${(totalActive/totalActive).toFixed(0)}，${ avgActiveRo }%（${timeScore}）
             高频桶占比：${ frequentBuckets }/${ totalBuckets }（${freqScore}）`
   };
 }
