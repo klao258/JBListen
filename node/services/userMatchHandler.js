@@ -37,7 +37,7 @@ const calculateUserScore = (logs) => {
 
   // 3. 日活跃度
   let timeScore = 0
-  const daySlotSet = {}; // 结构: { '2025-06-10': Set('08:00', '08:30', ...) }
+  const daySlotMap = {}; // 结构: { '2025-06-10': Set('08:00', '08:30', ...) }
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
@@ -59,10 +59,10 @@ const calculateUserScore = (logs) => {
     if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
   }
 
-  console.log('活跃度统计', daySlotSet)
+  console.log('活跃度统计', daySlotMap)
 
   // 计算每天的活跃度
-  const dailyActives = Object.values(daySlotSet).map(set => set.size / 48);
+  const dailyActives = Object.values(daySlotMap).map(set => set.size / 48);
 
   // 计算跨越天数（包含首尾），最少为1
   const totalDays = Math.max(1, maxDate.startOf('day').diff(minDate.startOf('day'), 'days') + 1);
