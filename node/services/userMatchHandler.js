@@ -69,7 +69,9 @@ const calculateUserScore = (logs) => {
     if (!maxDate || dayTime > maxDate) maxDate = dayTime;
   }
 
-  console.log('123', daySlotMap)
+  // console.log('📊 每日 slot 分布:', Object.fromEntries(
+  //   Object.entries(daySlotMap).map(([k, v]) => [k, Array.from(v).sort()])
+  // ));
   
 
   // 计算每天的活跃度
