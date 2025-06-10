@@ -55,7 +55,7 @@ const calculateUserScore = (logs) => {
     }
     daySlotMap[dayKey].add(slotKey);
 
-    console.log('123', m, slotStart)
+    console.log('123', log.matchedAt, m, slotStart)
 
     if (!minDate || slotStart.isBefore(minDate)) minDate = slotStart.clone();
     if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
