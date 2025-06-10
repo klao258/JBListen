@@ -83,10 +83,16 @@ const calculateUserScore = (logs) => {
 
   return {
     score,
-    reason: `群数:${groupCount} → ${groupScore}
-      平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}
-      理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}
-      高频桶:${frequentBuckets}/${totalBuckets} → ${freqScore}`
+    reason: `跨群:${groupCount}，
+             触发间隔:${avgInterval.toFixed(1)}min，
+             活跃度:${expectedMaxLogs.toFixed(0)}/${logs.length}，
+             高频桶:${frequentBuckets}/${totalBuckets}
+    `
+
+    // reason: `跨群:${groupCount} → ${groupScore}
+    //   平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}
+    //   理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}
+    //   高频桶:${frequentBuckets}/${totalBuckets} → ${freqScore}`
   };
 }
 
