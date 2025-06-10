@@ -41,11 +41,13 @@ const calculateUserScore = (logs) => {
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
-    const m = moment(log.createdAt).utcOffset(8); // 本地时间
+    const m = moment(log.createdAt).utcOffset(8); // 原始时间保持不动
+    const slotStart = moment(log.createdAt).utcOffset(8); // 单独归类对象
+
 
     // 向下取整到半小时的起点
-    const roundedMin = m.minutes() < 30 ? 0 : 30;
-    const slotStart = m.clone().minutes(roundedMin).seconds(0).milliseconds(0);
+    const roundedMin = slotStart.minutes() < 30 ? 0 : 30;
+    slotStart.minutes(roundedMin).seconds(0).milliseconds(0);
 
     const dayKey = slotStart.format('YYYY-MM-DD');
     const slotKey = slotStart.format('HH:mm');
@@ -55,7 +57,7 @@ const calculateUserScore = (logs) => {
     }
     daySlotMap[dayKey].add(slotKey);
 
-    console.log('123', log.matchedAt, m, slotStart)
+    console.log('123', log.matchedAt, slotStart)
 
     if (!minDate || slotStart.isBefore(minDate)) minDate = slotStart.clone();
     if (!maxDate || slotStart.isAfter(maxDate)) maxDate = slotStart.clone();
