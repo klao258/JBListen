@@ -41,9 +41,9 @@ const calculateUserScore = (logs) => {
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
-    if (!log.createdAt) continue;
+    if (!log.matchedAt) continue;
 
-    const utc = new Date(log.createdAt);
+    const utc = new Date(log.matchedAt);
     if (isNaN(utc.getTime())) continue;
 
     // ✅ 将 UTC 时间转换为东八区时间（北京时间）
