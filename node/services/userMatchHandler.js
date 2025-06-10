@@ -101,9 +101,9 @@ const calculateUserScore = (logs) => {
   return {
     score,
     reason: `跨群：${ groupCount } 个
-                触发间隔均值：${ avgInterval.toFixed(1) }min
-                活跃度均值：${dayRang}天均值, ${ avgActiveRo }%
-                高频桶占比：${ frequentBuckets }/${ totalBuckets }`
+                  触发间隔均值：${ avgInterval.toFixed(1) }min
+                  活跃度均值：${dayRang}天均值, ${ avgActiveRo }%
+                  高频桶占比：${ frequentBuckets }/${ totalBuckets }`
   };
 }
 
