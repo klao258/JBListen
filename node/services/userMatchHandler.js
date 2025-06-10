@@ -63,7 +63,7 @@ const calculateUserScore = (logs) => {
   const avgPercent = (totalActive / totalDays) * 100;
   const avgActiveRo = Number(avgPercent.toFixed(2));
 
-  if(dayRang > 1){
+  if(totalDays > 1){
     if(avgActiveRo > 80) timeScore = +25
     else if (avgActiveRo > 70) timeScore = +15
     else if (avgActiveRo > 60) timeScore = +5
