@@ -34,18 +34,34 @@ const calculateUserScore = (logs) => {
   else if (avgInterval > 10) intervalScore = -10;
   else intervalScore = 0;
 
-  // 3. 活跃时间跨度 vs 理论最大数量（按每天10小时、5分钟一次）
-  const durationHours = (timestamps[timestamps.length - 1] - timestamps[0]) / 1000 / 60 / 60;
-  const activeDays = Math.max(durationHours / 24, 1);
-  const expectedMaxLogs = (activeDays * 10 * 60) / 5;
-  const diffRatio = logs.length / expectedMaxLogs;
-  let timeScore = 0;
-  if (diffRatio > 1.5) timeScore = +25;
-  else if (diffRatio > 1.3) timeScore = +18;
-  else if (diffRatio > 1.2) timeScore = +10;
-  else if (diffRatio > 1.0) timeScore = -8;
-  else if (diffRatio > 0.8) timeScore = -16;
-  else timeScore = -25;
+  // 3. 日活跃度
+  let timeScore = 0
+  const daySlotMap = {};  // { '2025-06-09': Set('08:00', '08:30', ...) }
+  for (const log of logs) {
+    const date = moment(log.createdAt);
+    const dayKey = date.format('YYYY-MM-DD');
+    const slot = `${date.format('HH')}:${date.minutes() < 30 ? '00' : '30'}`;
+    if (!daySlotMap[dayKey]) {
+      daySlotMap[dayKey] = new Set();
+    }
+    daySlotMap[dayKey].add(slot);
+  }
+  const dayKeys = Object.keys(daySlotMap);
+  const dailyActives = dayKeys.map(day => daySlotMap[day].size / 48);
+  const avgActive = dailyActives.reduce((sum, val) => sum + val, 0) / dailyActives.length;
+  const dayRang = dailyActives.length // 跨天
+  const avgActiveRo = Number((avgActive * 100).toFixed(2)); // 活跃度百分比
+  if(dayRang > 1){
+    if(avgActiveRo > 80) timeScore = +25
+    else if (avgActiveRo > 70) timeScore = +15
+    else if (avgActiveRo > 60) timeScore = +5
+    else if (avgActiveRo > 50) timeScore = +0
+    else if (avgActiveRo > 40) timeScore = -5
+    else if (avgActiveRo > 30) timeScore = -10
+    else timeScore = -25
+  } else {
+    timeScore = +10
+  }
 
   // 4. 分桶频率分析（每小时）
   const buckets = {};
@@ -84,14 +100,9 @@ const calculateUserScore = (logs) => {
   return {
     score,
     reason: `跨群：${ groupCount } 个
-                触发间隔：${ avgInterval.toFixed(1) }min
-                活跃度：${ expectedMaxLogs.toFixed(0) }/${ logs.length }
-                高频桶：${ frequentBuckets }/${ totalBuckets }`
-
-    // reason: `跨群:${groupCount} → ${groupScore}
-    //   平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}
-    //   理论:${expectedMaxLogs.toFixed(0)} vs 实际:${logs.length} → ${timeScore}
-    //   高频桶:${frequentBuckets}/${totalBuckets} → ${freqScore}`
+                触发间隔均值：${ avgInterval.toFixed(1) }min
+                活跃度均值：${dayRang}天, ${ avgActive }/48
+                高频桶占比：${ frequentBuckets }/${ totalBuckets }`
   };
 }
 
