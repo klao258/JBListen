@@ -83,11 +83,10 @@ const calculateUserScore = (logs) => {
 
   return {
     score,
-    reason: `跨群:${groupCount}，
-             触发间隔:${avgInterval.toFixed(1)}min，
-             活跃度:${expectedMaxLogs.toFixed(0)}/${logs.length}，
-             高频桶:${frequentBuckets}/${totalBuckets}
-    `
+    reason: `跨群：${ groupCount } 个
+                触发间隔：${ avgInterval.toFixed(1) }min
+                活跃度：${ expectedMaxLogs.toFixed(0) }/${ logs.length }
+                高频桶：${ frequentBuckets }/${ totalBuckets }`
 
     // reason: `跨群:${groupCount} → ${groupScore}
     //   平均间隔:${avgInterval.toFixed(1)}min → ${intervalScore}
