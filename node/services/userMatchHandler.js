@@ -69,11 +69,6 @@ const calculateUserScore = (logs) => {
     if (!maxDate || dayTime > maxDate) maxDate = dayTime;
   }
 
-  // console.log('📊 每日 slot 分布:', Object.fromEntries(
-  //   Object.entries(daySlotMap).map(([k, v]) => [k, Array.from(v).sort()])
-  // ));
-  
-
   // 计算每天的活跃度
   const dailyActives = Object.values(daySlotMap).map(set => set.size / 48);
 
@@ -133,10 +128,10 @@ const calculateUserScore = (logs) => {
 
   return {
     score,
-    reason: `跨群：${ groupCount } 个
-        触发间隔均值：${ avgInterval.toFixed(1) }min
-        活跃度均值：跨${totalDays}天, 均值：${ avgActiveRo }%
-        高频桶占比：${ frequentBuckets }/${ totalBuckets }`
+    reason: `跨群：${ groupCount } 个（${groupScore}）
+            触发间隔均值：${ avgInterval.toFixed(1) }min（${intervalScore}）
+            活跃度均值：跨${totalDays}天, 均值${ avgActiveRo }%（${timeScore}）
+            高频桶占比：${ frequentBuckets }/${ totalBuckets }（${freqScore}）`
   };
 }
 
