@@ -87,7 +87,7 @@ const calculateUserScore = (logs, userId) => {
     timeScore = ((diff / 16) * 35).toFixed(0);
   
     // 限制最高得分
-    if (timeScore < 0) timeScore = 0;
+    if (timeScore < -35) timeScore = -35;
     if (timeScore > 35) timeScore = 35;
   } else {
     timeScore = 18; // 数据不足，轻微打分但不判定为刷
