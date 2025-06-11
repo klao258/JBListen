@@ -6,18 +6,28 @@
     <div class="main flex flex-col user">
         <form id="filterForm" method="get" action="/user-profiles" class="flex flex-wrap items-center gap-4 text-sm">
             <div class="flex items-center gap-1">
-            <label for="userId" class="text-gray-700">用户ID:</label>
-            <input type="text" id="userId" name="userId" value="<%= query.userId || '' %>" class="border rounded px-2 py-1 w-36">
+                <label for="userId" class="text-gray-700">用户ID:</label>
+                <input type="text" id="userId" name="userId" value="<%= query.userId || '' %>" class="border rounded px-2 py-1 w-36">
             </div>
 
             <div class="flex items-center gap-1">
-            <label for="username" class="text-gray-700">用户名:</label>
-            <input type="text" id="username" name="username" value="<%= query.username || '' %>" class="border rounded px-2 py-1 w-36">
+                <label for="username" class="text-gray-700">用户名:</label>
+                <input type="text" id="username" name="username" value="<%= query.username || '' %>" class="border rounded px-2 py-1 w-36">
             </div>
 
             <div class="flex items-center gap-1">
-            <label for="nickname" class="text-gray-700">用户昵称:</label>
-            <input type="text" id="nickname" name="nickname" value="<%= query.nickname || '' %>" class="border rounded px-2 py-1 w-36">
+                <label for="nickname" class="text-gray-700">用户昵称:</label>
+                <input type="text" id="nickname" name="nickname" value="<%= query.nickname || '' %>" class="border rounded px-2 py-1 w-36">
+            </div>
+
+            <!-- 游戏类型 -->
+            <div class="flex items-center gap-1">
+                <label for="isTuo" class="text-gray-700">是否托：</label>
+                <select id="isTuo" name="isTuo" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1">
+                    <option value="">全部</option>
+                    <option value="<%= true =%>">是</option>
+                    <option value="<%= false =%>">否</option>
+                </select>
             </div>
 
             <button type="submit" class="px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600">查询</button>
