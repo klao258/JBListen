@@ -14,7 +14,10 @@ router.get('/user-profiles', async ctx => {
   if (userId) filter.userId = userId;
   if (username) filter.username = { $regex: new RegExp(username, 'i') };
   if (nickname) filter.nickname = { $regex: new RegExp(nickname, 'i') };
-  if (isTuo) filter.isTuo = isTuo === 1 ? true : false;
+  
+  if(isTuo !== ""){
+    filter.isTuo = +isTuo === 1 ? true : false
+  }
 
   const total = await UserProfile.countDocuments(filter);
   const users = await UserProfile.find(filter)
