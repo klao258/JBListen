@@ -92,7 +92,7 @@ const calculateUserScore = (logs, userId) => {
   const avgPercent = (totalActive / totalDays).toFixed(0);
   const avgActiveRo = Number((avgPercent / 48).toFixed(2));
 
-  if (totalDays > 1) {
+  if (totalDays > 2) {
     const capped = Math.min(100, Math.max(0, avgActiveRo));
   
     // 中心点设为 30%，靠近 30% 最安全，偏离就加分（越偏离越可疑）
