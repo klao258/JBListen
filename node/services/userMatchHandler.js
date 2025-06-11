@@ -95,7 +95,6 @@ const calculateUserScore = (logs, userId) => {
     } else {
       timeScore = ((logs.length / 1000) * 35).toFixed(0)
     }
-    
   }
 
   // 4. 每小时分桶频率分析（35）
