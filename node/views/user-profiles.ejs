@@ -20,13 +20,13 @@
                 <input type="text" id="nickname" name="nickname" value="<%= query.nickname || '' %>" class="border rounded px-2 py-1 w-36">
             </div>
 
-            <!-- 游戏类型 -->
+            <!-- 是否托 -->
             <div class="flex items-center gap-1">
-                <label for="isTuo" class="text-gray-700">是否托：</label>
+                <label for="isTuo" class="text-gray-700">是否托:</label>
                 <select id="isTuo" name="isTuo" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1">
                     <option value="">全部</option>
-                    <option value="<%= true =%>">是</option>
-                    <option value="<%= false =%>">否</option>
+                    <option value="1">是</option>
+                    <option value="0">否</option>
                 </select>
             </div>
 
