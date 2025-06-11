@@ -88,8 +88,8 @@ const calculateUserScore = (logs, userId) => {
 
   // 平均活跃度百分比
   const totalActive = dailyActives.reduce((sum, val) => sum + val, 0);
-  const avgPercent = (totalActive / totalDays).toFixed(0);
-  const avgActiveRo = Number((avgPercent / 48).toFixed(2));
+  const avgPercent = (totalActive && totalDays) ? (totalActive / totalDays).toFixed(0) : 0;
+  const avgActiveRo = avgPercent ? Number((avgPercent / 48).toFixed(2)) : 0;
 
   if (totalDays > 0) {
     const capped = Math.min(100, Math.max(0, avgActiveRo));
