@@ -120,7 +120,7 @@ const calculateUserScore = (logs, userId) => {
     freqScore = (ratio * 35).toFixed(2);
   }
 
-  const score = Math.max(0, Math.min(100, (+groupScore) + (+intervalScore) + (+timeScore) + (+freqScore)));
+  const score = (Math.max(0, Math.min(100, (+groupScore) + (+intervalScore) + (+timeScore) + (+freqScore)))).toFixed(2);
 
   return {
     score,
