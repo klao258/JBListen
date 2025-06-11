@@ -30,11 +30,11 @@ const calculateUserScore = (logs, userId) => {
   }
   const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
   let intervalScore = 0;
-  if (avgInterval < 2) intervalScore = +20;
-  else if (avgInterval < 3) intervalScore = +15;
-  else if (avgInterval < 5) intervalScore = +8;
-  else if (avgInterval < 10) intervalScore = 0;
-  else if (avgInterval > 10) intervalScore = -5;
+  if (avgInterval < 3) intervalScore = +20;
+  else if (avgInterval < 5) intervalScore = +12;
+  else if (avgInterval < 8) intervalScore = +8;
+  else if (avgInterval < 12) intervalScore = +2;
+  else if (avgInterval > 12) intervalScore = 0;
 
   // 3. 日活跃度（35）
   let timeScore = 0
@@ -90,7 +90,7 @@ const calculateUserScore = (logs, userId) => {
     if (timeScore < 0) timeScore = 0;
     if (timeScore > 35) timeScore = 35;
   } else {
-    timeScore = 15; // 数据不足，轻微打分但不判定为刷
+    timeScore = 18; // 数据不足，轻微打分但不判定为刷
   }
 
   // 4. 每小时分桶频率分析（35）
@@ -120,9 +120,8 @@ const calculateUserScore = (logs, userId) => {
     if (ratio > 0.9) freqScore = +35;
     else if (ratio > 0.8) freqScore = +20;
     else if (ratio > 0.5) freqScore = +10;
-    else if (ratio > 0.25) freqScore = 0;
-    else if (ratio > 0) freqScore = -5;
-    else freqScore = -10;
+    else if (ratio > 0.25) freqScore = +5;
+    else freqScore = 0;
   }
 
   const score = Math.max(0, Math.min(100, groupScore + intervalScore + timeScore + freqScore));
