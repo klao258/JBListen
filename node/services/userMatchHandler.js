@@ -37,7 +37,7 @@ const calculateUserScore = (logs, userId) => {
 
   // 3. 日活跃度
   let timeScore = 0
-  const daySlotMap = {}; // 结构: { '2025-06-10': Set('08:00', '08:30', ...) }
+  let daySlotMap = {}; // 结构: { '2025-06-10': Set('08:00', '08:30', ...) }
   let minDate = null;
   let maxDate = null;
   for (const log of logs) {
