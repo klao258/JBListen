@@ -90,7 +90,12 @@ const calculateUserScore = (logs, userId) => {
     if (timeScore < -35) timeScore = -35;
     if (timeScore > 35) timeScore = 35;
   } else {
-    timeScore = 18; // 数据不足，轻微打分但不判定为刷
+    if(logs?.length < 500) {
+      timeScore = 18; // 数据不足，轻微打分但不判定为刷
+    } else {
+      timeScore = ((logs.length / 1000) * 35).toFixed(0)
+    }
+    
   }
 
   // 4. 每小时分桶频率分析（35）
