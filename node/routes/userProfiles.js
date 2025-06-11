@@ -5,7 +5,7 @@ const router = new Router();
 
 // GET: 用户列表展示页
 router.get('/user-profiles', async ctx => {
-  const { userId, username, nickname, isTuo, page = 1, pageSize = 50 } = ctx.query;
+  const { userId, username, nickname, isTuo='', page = 1, pageSize = 50 } = ctx.query;
 
   const currentPage = Math.max(parseInt(page), 1);
   const size = Math.max(parseInt(pageSize), 1);
