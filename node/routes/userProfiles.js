@@ -5,7 +5,7 @@ const router = new Router();
 
 // GET: 用户列表展示页
 router.get('/user-profiles', async ctx => {
-  const { userId, username, nickname, page = 1, pageSize = 50 } = ctx.query;
+  const { userId, username, nickname, isTuo, page = 1, pageSize = 50 } = ctx.query;
 
   const currentPage = Math.max(parseInt(page), 1);
   const size = Math.max(parseInt(pageSize), 1);
@@ -14,6 +14,7 @@ router.get('/user-profiles', async ctx => {
   if (userId) filter.userId = userId;
   if (username) filter.username = { $regex: new RegExp(username, 'i') };
   if (nickname) filter.nickname = { $regex: new RegExp(nickname, 'i') };
+  if (isTuo) filter.isTuo = isTuo === 1 ? true : false;
 
   const total = await UserProfile.countDocuments(filter);
   const users = await UserProfile.find(filter)
