@@ -84,7 +84,7 @@ const calculateUserScore = (logs, userId) => {
   if (totalDays > 0) {
     // 中心点设为 16，靠近 30% 最安全，偏离就加分（越偏离越可疑）
     const diff = avgPercent - 16; // 与“正常”活跃度的偏离程度
-    timeScore = Math.round(diff * 1.2); // 每偏离 1%，加 1.2 分
+    timeScore = ((diff / 16) * 35).toFixed(0);
   
     // 限制最高得分
     if (timeScore < 0) timeScore = 0;
@@ -117,11 +117,7 @@ const calculateUserScore = (logs, userId) => {
   let freqScore = 0;
   if (totalBuckets > 0) {
     const ratio = frequentBuckets / totalBuckets;
-    if (ratio > 0.9) freqScore = +35;
-    else if (ratio > 0.8) freqScore = +20;
-    else if (ratio > 0.5) freqScore = +10;
-    else if (ratio > 0.25) freqScore = +5;
-    else freqScore = 0;
+    freqScore = (ratio * 35).toFixed(2);
   }
 
   const score = Math.max(0, Math.min(100, groupScore + intervalScore + timeScore + freqScore));
