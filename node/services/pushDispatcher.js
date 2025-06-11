@@ -30,14 +30,16 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
 
     const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3001';
     const recordLink = `${baseUrl}/user-logs?userId=${user.id}`;
-    
+
+    // 托概率：${pr.score}%
+    // 分析：${pr.reason}
+    console.log(`托概率：${pr.score}%，分析：${pr.reason}`)
+
     const content = `
 🎯 关键词命中通知
 用户ID：<code>${user.id}</code>
 昵称：<b>${user.nickname || '未知'}</b>
 用户名：${user.username ? '@' + user.username : '无'}
-托概率：${pr.score}%
-分析：${pr.reason}
 触发群组：<b>${groupName}</b>
 游戏类型：<b>${gameLabel}</b>
 消息内容：${originalMessage}
