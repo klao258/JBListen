@@ -24,7 +24,6 @@
             <div class="flex items-center gap-1">
                 <label for="isTuo" class="text-gray-700">是否托:</label>
                 <select id="isTuo" name="isTuo" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1">
-                    <option value="" <%= query.isTuo === '' ? 'selected' : '' %>>全部</option>
                     <option value="1" <%= +query.isTuo === 1 ? 'selected' : '' %>>是</option>
                     <option value="0" <%= +query.isTuo === 0 ? 'selected' : '' %>>否</option>
                 </select>
@@ -48,7 +47,10 @@
                 <% users.forEach((user, index) => { %>
                 <tr>
                     <td class="px-3 py-2"><%= index + 1 + (currentPage - 1) * pageSize %></td>
-                    <td class="px-3 py-2"><%= user.userId %></td>
+                    <td class="px-3 py-2">
+                        <a href="https://jblisten.sso66s.cc/user-logs?userId=<%= user.userId %>" target="_blank" class="hover:underline">
+                            <%= user.userId %></td>
+                        </a>
                     <td class="px-3 py-2"><%= user.nickname || '-' %></td>
                     <td class="px-3 py-2 text-blue-600">
                         <% if (user?.username) { %>
