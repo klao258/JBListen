@@ -138,7 +138,7 @@ const calculateUserScore = (logs, userId) => {
 
   const score = Math.max(0, Math.min(100, 50 + groupScore + intervalScore + timeScore + freqScore));
 
-  console.log(`📊 ${userId}，总数: ${avgPercent}，跨天：${totalDays}`);
+  console.log(`📊 ${userId}，总数：${totalActive}，跨天：${totalDays}， 均值: ${avgPercent}， 占比：${avgPercent}/48`);
 
   return {
     score,
