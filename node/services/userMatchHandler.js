@@ -69,6 +69,18 @@ const calculateUserScore = (logs, userId) => {
     if (!maxDate || dayTime > maxDate) maxDate = dayTime;
   }
 
+  const sortedDates = Object.keys(daySlotMap).sort();  // 默认按 YYYY-MM-DD 排序
+  if (sortedDates.length > 2) {
+    const firstDay = sortedDates[0];
+    const lastDay = sortedDates[sortedDates.length - 1];
+
+    // 2. 删除首尾两天
+    delete daySlotMap[firstDay];
+    delete daySlotMap[lastDay];
+  } else {
+    daySlotMap = {}
+  }
+
   // 计算每天的活跃度
   const dailyActives = Object.values(daySlotMap).map(set => set.size);
 
