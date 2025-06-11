@@ -138,9 +138,7 @@ const calculateUserScore = (logs, userId) => {
 
   const score = Math.max(0, Math.min(100, 50 + groupScore + intervalScore + timeScore + freqScore));
 
-  console.log(`📊 ${userId}每日 slot 分布: ${avgPercent}`, Object.fromEntries(
-    Object.entries(daySlotMap).map(([k, v]) => [k, Array.from(v).sort()])
-  ));
+  console.log(`📊 ${userId}，总数: ${avgPercent}，跨天：${totalDays}`);
 
   return {
     score,
