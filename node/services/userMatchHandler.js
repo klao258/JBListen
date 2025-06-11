@@ -14,14 +14,15 @@ const calculateUserScore = (logs, userId) => {
   const groupIds = new Set(logs.map(l => l.groupId));
   const groupCount = groupIds.size;
 
-  // 1. 群组数量评分（越少越可疑）
+  // 1. 群组数量评分，越少越可疑（10）
   let groupScore = 0;
-  if (groupCount >= 4) groupScore = -25;
-  else if (groupCount === 3) groupScore = -10;
+  if (groupCount <= 1) groupScore = 10
   else if (groupCount === 2) groupScore = -5;
-  else if (groupCount <= 1) groupScore = +10;
+  else if (groupCount === 3) groupScore = -25;
+  else if (groupCount >= 4) groupScore = -50;
 
-  // 2. 平均操作间隔评分
+
+  // 2. 平均操作间隔评分（20）
   const timestamps = logs.map(l => new Date(l.matchedAt).getTime()).sort((a, b) => a - b);
   const intervals = [];
   for (let i = 1; i < timestamps.length; i++) {
@@ -29,17 +30,15 @@ const calculateUserScore = (logs, userId) => {
   }
   const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
   let intervalScore = 0;
-  if (avgInterval < 2) intervalScore = +25;
+  if (avgInterval < 2) intervalScore = +20;
   else if (avgInterval < 3) intervalScore = +15;
   else if (avgInterval < 5) intervalScore = +8;
-  else if (avgInterval > 10) intervalScore = -10;
-  else intervalScore = 0;
+  else if (avgInterval < 10) intervalScore = 0;
+  else if (avgInterval > 10) intervalScore = -5;
 
-  // 3. 日活跃度
+  // 3. 日活跃度（35）
   let timeScore = 0
   let daySlotMap = {}; // 结构: { '2025-06-10': Set('08:00', '08:30', ...) }
-  let minDate = null;
-  let maxDate = null;
   for (const log of logs) {
     if (!log.matchedAt) continue;
 
@@ -64,47 +63,37 @@ const calculateUserScore = (logs, userId) => {
 
     if (!daySlotMap[dayKey]) daySlotMap[dayKey] = new Set();
     daySlotMap[dayKey].add(slotKey);
-
-    if (!minDate || dayTime < minDate) minDate = dayTime;
-    if (!maxDate || dayTime > maxDate) maxDate = dayTime;
   }
-
-  
-  const sortedDates = Object.keys(daySlotMap).sort();  // 默认按 YYYY-MM-DD 排序
-  let totalDays = sortedDates.length > 2 ? sortedDates.length - 2 : 0
-  if (sortedDates.length > 2) {
-    const firstDay = sortedDates[0];
-    const lastDay = sortedDates[sortedDates.length - 1];
+  const activeDays = Object.keys(daySlotMap).sort();  // 默认按 YYYY-MM-DD 排序
+  let totalDays = activeDays.length > 2 ? activeDays.length - 2 : 0;  // 除去首尾后跨天数
+  let totalActive = 0
+  if (activeDays.length > 2) {
+    const firstDay = activeDays[0];
+    const lastDay = activeDays[activeDays.length - 1];
 
     // 2. 删除首尾两天
     delete daySlotMap[firstDay];
     delete daySlotMap[lastDay];
+
+    // 统计总活跃度
+    totalActive = Object.values(daySlotMap).map(set => set.size).reduce((sum, val) => sum + val, 0)
   } else {
     daySlotMap = {}
   }
-
-  // 计算每天的活跃度
-  const dailyActives = Object.values(daySlotMap).map(set => set.size);
-
-  // 平均活跃度百分比
-  const totalActive = dailyActives.reduce((sum, val) => sum + val, 0);
-  const avgPercent = (totalActive && totalDays) ? (totalActive / totalDays).toFixed(0) : 0;
-  const avgActiveRo = avgPercent ? Number((avgPercent / 48).toFixed(2)) : 0;
-
+  const avgPercent = (totalActive && totalDays) ? (totalActive / totalDays).toFixed(0) : 0; // 日活平均值
   if (totalDays > 0) {
-    const capped = Math.min(100, Math.max(0, avgActiveRo));
-  
-    // 中心点设为 30%，靠近 30% 最安全，偏离就加分（越偏离越可疑）
-    const diff = capped - 30; // 与“正常”活跃度的偏离程度
+    // 中心点设为 16，靠近 30% 最安全，偏离就加分（越偏离越可疑）
+    const diff = avgPercent - 16; // 与“正常”活跃度的偏离程度
     timeScore = Math.round(diff * 1.2); // 每偏离 1%，加 1.2 分
   
     // 限制最高得分
-    if (timeScore > 30) timeScore = 30;
+    if (timeScore < 0) timeScore = 0;
+    if (timeScore > 35) timeScore = 35;
   } else {
     timeScore = 15; // 数据不足，轻微打分但不判定为刷
   }
 
-  // 4. 分桶频率分析（每小时）
+  // 4. 每小时分桶频率分析（35）
   const buckets = {};
   logs.forEach(log => {
     const hourKey = new Date(log.matchedAt).toISOString().slice(0, 13);
@@ -128,38 +117,30 @@ const calculateUserScore = (logs, userId) => {
   let freqScore = 0;
   if (totalBuckets > 0) {
     const ratio = frequentBuckets / totalBuckets;
-    if (ratio > 0.75) freqScore = +25;
-    else if (ratio > 0.5) freqScore = +15;
-    else if (ratio > 0.3) freqScore = +8;
-    else if (ratio > 0.15) freqScore = -8;
-    else if (ratio > 0) freqScore = -15;
-    else freqScore = -25;
+    if (ratio > 0.9) freqScore = +35;
+    else if (ratio > 0.8) freqScore = +20;
+    else if (ratio > 0.5) freqScore = +10;
+    else if (ratio > 0.25) freqScore = 0;
+    else if (ratio > 0) freqScore = -5;
+    else freqScore = -10;
   }
 
-  const score = Math.max(0, Math.min(100, 50 + groupScore + intervalScore + timeScore + freqScore));
-
-  console.log(`📊 ${userId}，总数：${totalActive}，跨天：${totalDays}， 均值: ${avgPercent}， 占比：${avgPercent}/48`, daySlotMap);
+  const score = Math.max(0, Math.min(100, groupScore + intervalScore + timeScore + freqScore));
 
   return {
     score,
-    reason: `跨群：${ groupCount } 个（${groupScore}）
-            触发间隔均值：${ avgInterval.toFixed(1) }min（${ intervalScore }）
-            活跃度均值：跨${totalDays}天, 均值${avgPercent}，占比：${ avgActiveRo }%（ ${ timeScore }）
-            高频桶占比：${ frequentBuckets }/${ totalBuckets }（ ${ freqScore }）`
+    reason: `跨群：${ groupCount } 个，得分：（${groupScore}）
+            触发间隔均值：${ avgInterval.toFixed(1) }min，得分：（${ intervalScore }）
+            活跃度均值：跨${totalDays}天, 均值${avgPercent}， 得分：${ timeScore }）
+            高频桶占比：${ frequentBuckets }/${ totalBuckets }，得分：（ ${ freqScore }）`
   };
 }
 
 // 记录日志, 单用户最大记录 1000 条日志
 const insertUserLog = async (logData) => {
   const { userId, username, nickname, groupId, groupName, sendDateTime, ...matchedGames } = logData;
-
-  // Step 1: 插入新日志（matchedAt 会自动写入）
   await GameMatchLog.create({ userId, username, nickname, groupId, groupName, sendDateTime, ...matchedGames });
-
-  // Step 2: 查询该用户日志总条数
   const count = await GameMatchLog.countDocuments({ userId });
-
-  // Step 3: 如果超过 1000，删除最早的 10 条
   if (count > 1000) {
     const oldest = await GameMatchLog.find({ userId })
       .sort({ matchedAt: 1 }) // 最早的日志
