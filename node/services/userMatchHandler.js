@@ -121,7 +121,7 @@ const calculateUserScore = (logs, userId) => {
   let freqScore = 0;
   if (totalBuckets > 0) {
     const ratio = frequentBuckets / totalBuckets;
-    freqScore = (ratio * 35).toFixed(2);
+    freqScore = (ratio * 35).toFixed(0);
   }
 
   const score = (Math.max(0, Math.min(100, (+groupScore) + (+intervalScore) + (+timeScore) + (+freqScore)))).toFixed(2);
@@ -201,6 +201,7 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
   if (!profile) profile = new UserProfile({ userId, groups: [] });
       profile.nickname = nickname
       profile.username = username
+      profile.isTuo = pr?.score > 85 ? true : false
   let groupRecord = profile.groups.find(g => g?.groupId === groupId);
   if (!groupRecord) {
     groupRecord = { groupId, groupName, gameTypes: [matchedGames.gameLabel] };
@@ -211,6 +212,11 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
     }
   }
   await profile.save();
+
+  if(pr?.score > 85) {
+    console.log(`用户（${userId}）${nickname}： 托概率：${pr.score}%，分析：${pr.reason}`)
+    return false
+  }
 
   // Step 3: 推送对应游戏客服
   await dispatchPush({
