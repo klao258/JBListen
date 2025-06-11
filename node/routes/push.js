@@ -9,7 +9,8 @@ const router = new Router();
 router.post('/api/push', async ctx => {
   try {
     const { groupId='', groupName='', userId='', username='', nickname='', message='', sendDateTime = '' } = ctx.request.body;
-    console.log(`node接收到消息: ${message}\n`)
+    console.log(`node接收到消息: ${groupName}`)
+    console.log(`${{nickname}}-${userId}：${message}\n`)
 
     if (!userId || !groupId) {
       ctx.status = 400;

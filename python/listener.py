@@ -127,8 +127,8 @@ async def listener(event):
     beijing_time = message_time.astimezone(timezone(timedelta(hours=8)))
     sendDateTime = beijing_time.strftime("%Y-%m-%d %H:%M:%S")
     
-    print(f'👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 群消息 | 群名: {groupName} | 群ID: {groupId}👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 ')
-    print(f'🔥🔥🔥 {userId} | {nickname} | {username} | {sendDateTime}')
+    # print(f'👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 群消息 | 群名: {groupName} | 群ID: {groupId}👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 👥 ')
+    # print(f'🔥🔥🔥 {userId} | {nickname} | {username} | {sendDateTime}')
 
     push_to_node({ 
         "groupId": groupId, 
