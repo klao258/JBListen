@@ -24,8 +24,8 @@
             <div class="flex items-center gap-1">
                 <label for="isTuo" class="text-gray-700">是否托:</label>
                 <select id="isTuo" name="isTuo" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1">
-                    <option value="1" <%= +query.isTuo === 1 ? 'selected' : '' %>>是</option>
                     <option value="0" <%= +query.isTuo === 0 ? 'selected' : '' %>>否</option>
+                    <option value="1" <%= +query.isTuo === 1 ? 'selected' : '' %>>是</option>
                 </select>
             </div>
 
