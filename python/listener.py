@@ -10,6 +10,7 @@ from pymongo import MongoClient
 import threading
 import time
 from datetime import datetime, timedelta, timezone
+from telethon.tl.types import User, Channel, Chat
 
 # 加载 .env 环境变量
 load_dotenv()
@@ -106,6 +107,9 @@ async def listener(event):
         nickname = user.get("nickname", "")
     else:
         sender = await event.get_sender()
+
+        if not isinstance(sender, User):
+            return  # 忽略非用户发言
 
         if not sender or getattr(sender, "bot", False):
             return  # 排除匿名管理员 或 机器人消息
