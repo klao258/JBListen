@@ -29,7 +29,7 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
     }
 
     const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3001';
-    const recordLink = `${baseUrl}/user-logs?userId=${user.id}`;
+    const recordLink = `<a href="${baseUrl}/user-logs?userId=${user.id}">点击查看投注记录</a>`;
 
     // 托概率：${pr.score}%
     // 分析：${pr.reason}
