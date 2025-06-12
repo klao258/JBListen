@@ -201,7 +201,7 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
   if (!profile) profile = new UserProfile({ userId, groups: [] });
       profile.nickname = nickname
       profile.username = username
-      profile.isTuo = pr?.score > 85 ? true : false
+      profile.isTuo = pr?.score > 80 ? true : false
   let groupRecord = profile.groups.find(g => g?.groupId === groupId);
   if (!groupRecord) {
     groupRecord = { groupId, groupName, gameTypes: [matchedGames.gameLabel] };
