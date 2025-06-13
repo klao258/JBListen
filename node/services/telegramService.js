@@ -75,6 +75,19 @@ const initGroupsFromTelegram = async () => {
       }
     }
   }
+
+  // 当前还在的群组 ID 列表
+  const activeGroupIds = new Set(
+    allGroups
+      .filter(dialog => dialog?.groupId)
+      .map(dialog => dialog.groupId.toString())
+  );
+
+  // 设置所有“已不在”的群组 isWatched = false
+  const result = await GroupConfig.updateMany(
+    { groupId: { $nin: Array.from(activeGroupIds) } },
+    { $set: { isWatched: false } }
+  );
 }
 
 // 获取session
