@@ -188,6 +188,7 @@ exports.handleMessage = async ({ groupId, groupName,  userId, username, nickname
         matchedKeywords: matched[0],
         originalMessage: message
       };
+      break; // 匹配到后立即退出循环
     }
   }
 
