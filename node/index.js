@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config({ path: '../.env' })
 const Koa = require('koa');
 const views = require('koa-views');
 const bodyParser = require('koa-bodyparser');
