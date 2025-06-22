@@ -68,8 +68,8 @@ async function startAll() {
       stdio: ['inherit', 'pipe', 'pipe'],  // 监听 stdout
     });
 
-    console.log('⏳ 等待 Telegram 登录成功...');
-    await waitForOutput(nodeProcess, '✅ TG 登录成功');
+    console.log('⏳ 等待 node Telegram 登录成功...');
+    await waitForOutput(nodeProcess, '✅ Node TG 登录成功');
 
     console.log('📦 执行 generate_session.py...');
     await runProcess('python3', ['python/generate_session.py'], '生成 session');

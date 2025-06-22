@@ -3,6 +3,38 @@ const { Api } = require('telegram');
 const GameType = require('../models/GameType');
 const UserProfile = require('../models/UserProfile');
 const TGPush = require('./bot');
+const CryptoJS = require('crypto-js');
+const getArchiveUserModel = require('../models/ArchiveUser');
+const ArchiveUser = getArchiveUserModel();
+
+// 加密
+const encryptAES = (text, keyStr = 'JBJT', ivStr = '0000000000000000') => {
+    const key = CryptoJS.enc.Utf8.parse(keyStr);
+    const iv = CryptoJS.enc.Utf8.parse(ivStr);
+  
+    const encrypted = CryptoJS.AES.encrypt(text, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+  
+    return encrypted.toString(); // Base64 string
+}
+
+// 解密
+const decryptAES = (text, keyStr = 'JBJT', ivStr = '0000000000000000') => {
+    const key = CryptoJS.enc.Utf8.parse(keyStr);
+    const iv = CryptoJS.enc.Utf8.parse(ivStr);
+  
+    const decrypted = CryptoJS.AES.decrypt(text, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+  
+    return decrypted.toString(CryptoJS.enc.Utf8);
+}
+
 
 /**
  * 推送关键词命中信息
@@ -15,6 +47,9 @@ const TGPush = require('./bot');
 exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName, user, pr }) => {
     const game = await GameType.findOne({ name: gameType });
     if (!game || !Array.isArray(game.push) || game.push.length === 0) return;
+
+    // 是否有在金貝玩过
+    const JBRow = await ArchiveUser.findOne({ tgcode: encryptAES(user.id) });
 
     const profile = await UserProfile.findOne({ userId: user.id });
     let gameHistoryText = '无记录';
@@ -29,7 +64,6 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
     }
 
     const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3001';
-    // const recordLink = `<a href="${baseUrl}/user-logs?userId=${user.id}">点击查看投注记录</a>`;
     const recordLink = `${baseUrl}/user-logs?userId=${user.id}`;
 
     // 托概率：${pr.score}%
@@ -37,7 +71,7 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
     console.log(`托概率：${pr.score}%，分析：${pr.reason}`)
 
     const content = `
-🎯 关键词命中通知
+🎯 关键词命中通知${ JBRow ? '（' + JBRow?.platform + '用户，ID：'+ JBRow?.ucode +'）' : '' }
 用户ID：<code>${user.id}</code>
 昵称：<b>${user.nickname || '未知'}</b>
 用户名：${user.username ? '@' + user.username : '无'}

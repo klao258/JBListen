@@ -6,7 +6,6 @@ const GameType = require('../models/GameType');
 const input = require('input');
 const fs = require('fs');
 const GroupConfig = require('../models/GroupConfig');
-const userMatchHandler = require('./userMatchHandler');
 
 let client;
 
@@ -131,7 +130,7 @@ const ensureClient = async () => {
 const start = async () => {
   client = await ensureClient();  // 已连接 + 已授权的 client
 
-  console.log('✅ TG 登录成功');  // 👈 关键输出标志
+  console.log('✅ Node TG 登录成功');  // 👈 关键输出标志
 
   await initGroupsFromTelegram(); // 登录成功后初始化群组
 };

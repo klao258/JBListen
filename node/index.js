@@ -7,21 +7,9 @@ const mongoose = require('mongoose');
 const path = require('path');
 const telegramService = require('./services/telegramService');
 const GameType = require('./models/GameType');
+const { connectMongo } = require('./models/db.js');
 
 const app = new Koa();
-
-const connectMongo = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log('✅ MongoDB 连接成功');
-  } catch (err) {
-    console.error('❌ MongoDB 连接失败', err);
-    process.exit(1);
-  }
-}
 
 const initGameTypes = async () => {
   const defaults = [
@@ -51,6 +39,13 @@ const initGameTypes = async () => {
   app.use(serve(path.join(__dirname, 'public')));
   app.use(views(path.join(__dirname, 'views'), { extension: 'ejs' }));
   app.use(require('./routes/index').routes());
+  console.log('端口', process.env.PORT)
 
-  app.listen(process.env.PROT, () => console.log(`🚀 已启动服务`));
+  app.use(async (ctx, next) => {
+    console.log(`${ctx.method} ${ctx.url} - ${new Date().toISOString()}`);
+    await next();
+  });
+
+  
+  app.listen(process.env.PORT, () => console.log(`🚀 已启动服务, ${process.env.PORT} 端口`));
 })();
