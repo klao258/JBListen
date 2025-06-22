@@ -50,6 +50,9 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
 
     // 是否有在金貝玩过
     const JBRow = await ArchiveUser.findOne({ tgcode: encryptAES(user.id) });
+    if (JBRow) {
+        console.log('查到数据', JBRow)
+    }
 
     const profile = await UserProfile.findOne({ userId: user.id });
     let gameHistoryText = '无记录';
@@ -68,7 +71,7 @@ exports.dispatchPush = async ({ gameType, gameLabel, originalMessage, groupName,
 
     // 托概率：${pr.score}%
     // 分析：${pr.reason}
-    console.log(`托概率：${pr.score}%，分析：${pr.reason}`)
+    // console.log(`托概率：${pr.score}%，分析：${pr.reason}`)
 
     const content = `
 🎯 关键词命中通知${ JBRow ? '（' + JBRow?.platform + '用户，ID：'+ JBRow?.ucode +'）' : '' }
