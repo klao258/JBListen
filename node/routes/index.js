@@ -9,7 +9,7 @@ const pushRoute = require('./push');
 const router = new Router();
 
 router.get('/', async ctx => {
-  const groups = await GroupConfig.find().sort({ isWatched: -1, groupName: 1 });
+  const groups = await GroupConfig.find({ configurable: true }).sort({ isWatched: -1, groupName: 1 });
   const gameTypes = await GameType.find(); // ✅ 查询所有游戏类型
   await ctx.render('index', { groups, gameTypes, request: { path: '/' } }); // ✅ 传入模板
 });
