@@ -86,7 +86,7 @@ const initGroupsFromTelegram = async () => {
   // 设置所有“已不在”的群组, 不监听, 不显示在配置列表中
   const result = await GroupConfig.updateMany(
     { groupId: { $nin: Array.from(activeGroupIds) } },
-    { $set: { isWatched: false, configurable: false } }
+    { $set: { isWatched: false } }
   );
 }
 
