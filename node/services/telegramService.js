@@ -55,6 +55,7 @@ const initGroupsFromTelegram = async () => {
         groupId,
         groupName,
         isWatched: true,
+        configurable: true,
         gameConfigs: gameTypes.map(gt => ({ gameType: gt.name, gameLabel: gt.label,  keywords: [] }))
       });
       await group.save();

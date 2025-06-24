@@ -82,7 +82,7 @@
     let res = await fetch(`/group-configs/${groupId}/toggleConfigurable`, { method: 'POST'})
         res = await res.json()
         if(res?.success) {
-          el.innerText = data.isWatched ? '✅' : '❌';
+          window.location.reload();
         } else {
           alert('切换监听失败');
         }
