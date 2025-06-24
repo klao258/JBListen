@@ -44,3 +44,18 @@ exports.toggleWatch = async ctx => {
     ctx.body = { success: false, message: '群组不存在' };
   }
 };
+
+// 切换是否显示配置
+exports.toggleConfigurable = async ctx => {
+  const { groupId } = ctx.params;
+  const group = await GroupConfig.findOne({ groupId });
+  if (group) {
+    group.configurable = !group.configurable;
+    await group.save();
+    ctx.set('Content-Type', 'application/json'); // ✅ 设置为 JSON
+    ctx.body = { success: true, configurable: group.configurable };
+  } else {
+    ctx.status = 404;
+    ctx.body = { success: false, message: '群组不存在' };
+  }
+};
