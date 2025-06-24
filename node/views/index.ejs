@@ -76,8 +76,9 @@
     });
   }
 
-  // 切换是否显示群组排至
+  // 切换是否显示群组配置
   const toggleConfigurable = async (groupId, el) => {
+    if (!confirm("保存后将不在显示该群组，确认要隐藏嘛？")) return false
     let res = await fetch(`/group-configs/${groupId}/toggleConfigurable`, { method: 'POST'})
         res = await res.json()
         if(res?.success) {
