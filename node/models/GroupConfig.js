@@ -9,7 +9,8 @@ const GameConfigSchema = new mongoose.Schema({
 const GroupConfigSchema = new mongoose.Schema({
   groupId: { type: String, required: true, unique: true },
   groupName: { type: String, required: true },
-  isWatched: { type: Boolean, default: true },
+  isWatched: { type: Boolean, default: true },  // 是否监听
+  configurable: { type: Boolean, default: true }, // 是否可配置
   gameConfigs: [GameConfigSchema]
 });
 
