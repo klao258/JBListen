@@ -23,8 +23,17 @@ const initGroupsFromTelegram = async () => {
     .map(g => {
       const groupId = g.id?.toString?.();
       const groupName = g.title?.trim();
+
+      // 优先用公开用户名链接
+      let groupLink = '';
+      if (g.username) {
+        groupLink = `https://t.me/${g.username}`;
+      } else {
+        groupLink = '';
+      }
+
       if (!groupId || !groupName) return null;
-      return { groupId, groupName };
+      return { groupId, groupName, groupLink };
     })
     .filter(Boolean);
 
@@ -46,6 +55,7 @@ const initGroupsFromTelegram = async () => {
    
     const groupId = dialog.groupId.toString();
     const groupName = dialog.groupName;
+    const groupLink = dialog.groupLink;
 
     if (blacklist.includes(groupId)) continue;
 
@@ -54,6 +64,7 @@ const initGroupsFromTelegram = async () => {
       group = new GroupConfig({
         groupId,
         groupName,
+        groupLink,
         isWatched: true,
         configurable: true,
         gameConfigs: gameTypes.map(gt => ({ gameType: gt.name, gameLabel: gt.label,  keywords: [] }))
@@ -69,6 +80,7 @@ const initGroupsFromTelegram = async () => {
           updated = true;
         }
       }
+      group['groupLink'] = groupLink
       if (updated) {
         await group.save();
         console.log(`🔧 补全群：${ group.groupName } 的游戏配置`);
