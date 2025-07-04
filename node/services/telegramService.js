@@ -80,10 +80,15 @@ const initGroupsFromTelegram = async () => {
           updated = true;
         }
       }
-      group['groupLink'] = groupLink
+      
       if (updated) {
         await group.save();
         console.log(`🔧 补全群：${ group.groupName } 的游戏配置`);
+      }
+      if(groupLink){
+        group['groupLink'] = groupLink
+        await group.save();
+        console.log(`🔧 补全群链接`);
       }
     }
   }
